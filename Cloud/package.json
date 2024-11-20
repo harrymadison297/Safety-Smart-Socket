@@ -1,0 +1,22 @@
+{
+  "name": "safety_socket_cloud",
+  "version": "1.0.0",
+  "description": "Cloud management for Safety Smart Socket",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "HarryMadison297",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "compression": "^1.7.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "mongoose": "^8.8.2",
+    "morgan": "^1.10.0"
+  }
+}
