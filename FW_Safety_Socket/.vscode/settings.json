@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "sp_ade9153.h": "c",
+        "ade9153a.h": "c",
+        "*.inc": "c"
+    },
+    "idf.portWin": "COM3",
+    "idf.flashType": "UART"
+}
