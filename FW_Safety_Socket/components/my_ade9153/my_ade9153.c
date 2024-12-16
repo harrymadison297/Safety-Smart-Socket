@@ -9,8 +9,8 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 
-#include "ade9153a.h"`
-#include "sp_ade9153.h"
+#include "ade9153a.h"
+#include "my_ade9153.h"
 
 /* Varible */
 spi_device_handle_t spi;
@@ -26,6 +26,7 @@ bool init_spiADE9153(uint8_t xSPI_HOST, int8_t SPI_PIN_CS, uint32_t SPI_CLK) {
 	esp_err_t ret;
 	int8_t pinMISO, pinMOSI, pinCLK, pinCS;
 
+	/* Select SPI Pin */
 	if (xSPI_HOST == HSPI_HOST) {
 		pinMISO = PIN_HSPI_MISO;
 		pinMOSI = PIN_HSPI_MOSI;
@@ -43,43 +44,42 @@ bool init_spiADE9153(uint8_t xSPI_HOST, int8_t SPI_PIN_CS, uint32_t SPI_CLK) {
 		pinCS = SPI_PIN_CS;
 	}
 
-	// Config bus
+	/* Config bus */
 	spi_bus_config_t buscfg = { .mosi_io_num = pinMOSI, .miso_io_num = pinMISO,
 			.sclk_io_num = pinCLK, .quadhd_io_num = -1, .quadwp_io_num = -1,
 			.max_transfer_sz = 10 };
 
-	// Config slave interface
+	/* Config slave interface */
 	spi_device_interface_config_t devcfg =
 			{ .command_bits = 0, .address_bits = 0, .dummy_bits = 0,
 					.queue_size = 2, .clock_speed_hz = SPI_CLK,
 					.duty_cycle_pos = 128, .mode = 0, .spics_io_num = pinCS,
 					.flags = 0 };
 
-	// Init spi bus
+	/* Init spi bus */
 	ret = spi_bus_initialize(xSPI_HOST, &buscfg, DMA_CHAN);
 	assert(ret==ESP_OK);
 	if (ret != ESP_OK) {
 		return false;
 	}
-	// Add slave to spi bus
+	/* Add slave to spi bus */
 	ret = spi_bus_add_device(xSPI_HOST, &devcfg, &spi);
 	assert(ret==ESP_OK);
 	if (ret != ESP_OK) {
 		return false;
 	}
-	//Pullup pin SPI
+	/* Pullup pin SPI */
 	gpio_set_pull_mode(PIN_VSPI_MISO, GPIO_PULLUP_ONLY);
 	gpio_set_pull_mode(PIN_VSPI_CLK, GPIO_PULLDOWN_ONLY);
 	gpio_set_pull_mode(PIN_VSPI_CS, GPIO_PULLUP_ONLY);
 
-	// Run DSP
+	/* Run DSP */
 	spi_write16(REG_RUN, ADE9153_RUN);
 
 	return true;
 }
 
-/* Write SPI */
-// Format: ||ADDRESS|/W|xxx||DATA-16BIT||
+/* Format: ||ADDRESS|/W|xxx||DATA-16BIT|| */
 void spi_write16(uint16_t address, uint16_t data) {
 	esp_err_t ret;
 	uint16_t cmd_hdr;
@@ -100,11 +100,9 @@ void spi_write16(uint16_t address, uint16_t data) {
 	trs.rx_buffer = recvPkt;
 	ret = spi_device_polling_transmit(spi, &trs);
 	assert(ret == ESP_OK);
-
-	printf("WRITE: TX:%d - RX:%d\n", *(int*) sendPkt, *(int*) recvPkt);
 }
 
-// Format: ||ADDRESS|/W|xxx||DATA-32BIT||
+/* Format: ||ADDRESS|/W|xxx||DATA-32BIT|| */
 void spi_write32(uint16_t address, uint32_t data) {
 	esp_err_t ret;
 	uint16_t cmd_hdr;
@@ -129,8 +127,7 @@ void spi_write32(uint16_t address, uint32_t data) {
 	assert(ret == ESP_OK);
 }
 
-/* Read SPI */
-// Format: ||ADDRESS|R|xxx||DATA-16BIT||
+/* Format: ||ADDRESS|/R|xxx||DATA-16BIT|| */
 uint16_t spi_read16(uint16_t address) {
 	esp_err_t ret;
 	uint16_t cmd_hdr;
@@ -146,19 +143,16 @@ uint16_t spi_read16(uint16_t address) {
 
 	spi_transaction_t trs;
 	memset(&trs, 0, sizeof(trs));
-	trs.length = CMD_16BIT; //CMD_16BIT + CMD_16BIT;
+	trs.length = CMD_16BIT; /* CMD_16BIT + CMD_16BIT; */
 	trs.tx_buffer = sendPkt;
 	trs.rx_buffer = recvPkt;
 	ret = spi_device_polling_transmit(spi, &trs);
 	assert(ret == ESP_OK);
 	res = (recvPkt[2] << 8) | (recvPkt[3] << 0);
-
-	printf("READ: TX:%d - RX:%d\n", *(int*) sendPkt, *(int*) recvPkt);
-
 	return res;
 }
 
-// Format: ||ADDRESS|R|xxx||DATA-32BIT||
+/* Format: ||ADDRESS|/R|xxx||DATA-32BIT|| */
 uint32_t spi_read32(uint16_t address) {
 	esp_err_t ret;
 	uint16_t cmd_hdr;
@@ -188,7 +182,6 @@ uint32_t spi_read32(uint16_t address) {
 /* function ade9153 */
 float calculate_target_aicc(float rShunt, float PGAGain) {
 	float targetAICC;
-	// targetAICC = (pow(10,9))/(rShunt*PGAGain*sqrt(2)*52725703);
 	targetAICC = 13.41105 / (rShunt * PGAGain); // 10^9/(52725703*sqrt(2)) = 13.41105
 	return targetAICC;
 }
@@ -224,28 +217,16 @@ void ADE9153_reset(uint8_t pinReset) {
 }
 
 void ADE9153_initCFG() {
-	/* Test kit ev-ade9153a */
 	spi_write16(REG_AI_PGAGAIN, ADE9153_AI_PGAGAIN16N);
-// 	printf("REG_AI_PGAGAIN: %lx\n", spi_read16(REG_AI_PGAGAIN));
 	spi_write32(REG_VDIV_RSMALL, ADE9153_VDIV_RSMALL);
-//	printf("REG_VDIV_RSMALL: %lx\n", spi_read32(REG_VDIV_RSMALL));
 	spi_write16(REG_COMPMODE, ADE9153_COMPMODE);
-//	printf("REG_COMPMODE: %lx\n", spi_read16(REG_COMPMODE));
 	spi_write16(REG_CONFIG2, ADE9153_CONFIG2);
-//	printf("REG_CONFIG2: %lx\n", spi_read16(REG_CONFIG2));
 	spi_write16(REG_ACCMODE, ADE9153_ACCMODE);
-//	printf("REG_ACCMODE: %lx\n", spi_read16(REG_ACCMODE));
-	spi_write32(REG_VLEVEL, ADE9153_VLEVEL);   // if vHeadRoom != 2..
-//	printf("REG_VLEVEL: %lx\n", spi_read32(REG_VLEVEL));
+	spi_write32(REG_VLEVEL, ADE9153_VLEVEL);  
 	spi_write32(REG_CONFIG0, ADE9153_CONFIG0);
-//	printf("REG_CONFIG0: %lx\n", spi_read32(REG_CONFIG0));
 	spi_write32(REG_AIRMS_OS, 0xFFFFFFF5);
-//	spi_write32(REG_AIRMS_OS, 0x00000000);
-//	spi_write32(REG_AIRMS_OS, 0x00004E16);
 	spi_write32(REG_AVRMS_OS, 0x00000000);
-//	spi_write32(REG_AVRMS_OS, 0xF71E316B);
 	spi_write16(REG_EP_CFG, ADE9153_EP_CFG);
-//	printf("REG_EP_CFG: %lx\n", spi_read16(REG_EP_CFG));
 }
 
 void ADE9153_lock() {
@@ -259,7 +240,6 @@ void ADE9153_unLock() {
 bool ADE9153_acal_AINormal() {
 	uint32_t mSReady = 0;
 	mSReady = spi_read32(REG_MS_STATUS_CURRENT);
-	printf("mSReady: %lx\n", mSReady);
 	if (mSReady == 0xFFFFFFFF) {
 		return false;
 	}
@@ -286,7 +266,6 @@ bool ADE9153_acal_AITurbo() {
 bool ADE9153_acal_AV() {
 	uint32_t mSReady = 0;
 	mSReady = spi_read32(REG_MS_STATUS_CURRENT);
-	printf("mSReady: %lx\n", mSReady);
 	if (mSReady == 0xFFFFFFFF) {
 		return false;
 	}

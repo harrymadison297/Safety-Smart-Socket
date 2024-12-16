@@ -1,85 +1,142 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
-
 #include <string.h>
-#include "esp_log.h"
-#include "driver/gpio.h"
 
-#include "sp_ade9153.h"
-#include "ade9153a.h"
+#include "FW_Safety_Socket.h"
 
-#define RX_SIZE (1500)
-#define TX_SIZE (1460)
+#define DEV_MODE 1
+#define TEST_ADE9153 0
 
-#define QUEUE_SEND_SIZE 200
-
-/******************************************************************
- * GPIO Define
- */
-#define CTRL_ISO_PIN_OUT 26
-#define STATE_LED_PIN_OUT 14
-
-/******************************************************************
- * Definition ADE9153
- */
-/* ADE9153 configuration */
-#define ADE9153_PIN_RESET 22
-
-#define RSHUNT 0.002 // Ohm
-#define PGAGAIN 16
-#define RBIG 1000000 // Ohm
-#define RSMALL 1000	 // Ohm
-
-/* SPI with ADE9153 */
-#define xSPI_HOST VSPI_HOST
-#define xSPI_CS -1
-#define xSPI_CLK (1 * 1000 * 1000)
-
+/**************************************************************
+ *						GLOBAL VARIABLE
+ **************************************************************/
 /* Ade9153 data */
-RMSRegs_t RMSRegs;
-PowRegs_t PowRegs;
-PQRegs_t PQRegs;
-ACALRegs_t ACALRegs;
-
-typedef struct
-{
-	char *pNameDevice;
-	char *version;
-	uint8_t error;
-	uint32_t sampleMSec;
-	uint32_t sampleSecCalib;
-	uint8_t voltSecCalib;
-	uint8_t curtSecCalib;
-
-	RMSRegs_t RMSValues;
-	PowRegs_t PowValues;
-	PQRegs_t PQValues;
-	ACALRegs_t ACALValues;
-} device_data_t;
-
+static RMSRegs_t RMSRegs;
+static PowRegs_t PowRegs;
+static PQRegs_t PQRegs;
+static ACALRegs_t ACALRegs;
 static device_data_t devData;
-uint16_t periodMeasure = 500;
+/* Semaphore for BLE and Wifi Config */
+static SemaphoreHandle_t sem = xSemaphoreCreateBinary();
 
-void measurementADE(void *pvParameter)
+/**************************************************************
+ *						TOOLS FUNCTIONS
+ **************************************************************/
+void esp_output_create(int pin)
+{
+	gpio_config_t pin_config = {
+		1LL << pin,
+		GPIO_MODE_OUTPUT,
+		GPIO_PULLUP_DISABLE,
+		GPIO_PULLDOWN_DISABLE,
+		GPIO_INTR_DISABLE};
+	gpio_config(&pin_config);
+	gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+}
+
+/**************************************************************
+ *						MAIN FUNCTION
+ **************************************************************/
+void app_main(void)
+{
+	/* Init flash memory */
+	esp_err_t err;
+    err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES)
+    {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+	ESP_ERROR_CHECK(err);
+
+	/* Read state flag from memory */
+    bool value = false;
+    value = read_flag_from_flash();
+	ESP_LOGI(TAG, "Value = %d", value);
+
+    if (value == WIFI_MESH_NOT_INIT)
+    {
+        BLE_SERVER_INIT();
+        ble_callback_register_callback(ble_recv_callback);
+        register_wifi_status_callback(wifi_connect_status_cb);
+        register_mqtt_recv_callback(mqtt_recv_data_cb);
+        register_mqtt_sub_mac_topic_success(mqtt_sub_mac_topic_sc_cb);
+    }
+    
+	if (value == WIFI_MESH_OK)
+    {
+        char mesh_id[30];
+        char softap_pw[30];
+        uint8_t mesh_id_u8[6];
+        router_and_client_id_infor_t info = {};
+        register_mqtt_recv_callback(mqtt_recv_data_cb);
+        get_router_and_clientid_infor(&infor);
+        get_mesh_credentials(mesh_id, softap_pw);
+        hex_string_to_u8_array(mesh_id, mesh_id_u8);
+        esp_wifi_mesh_init(infor.router_ssid, infor.router_password, softap_pw, mesh_id_u8);
+        mqtt_app_start("mqtt://white-dev.aithings.vn:1883");
+        xTaskCreate((TaskFunction_t)send_ui_to_cloud_task, "send_ui_to_cloud_task", 8192, (void *)infor.client_id, 1, (TaskHandle_t *)ui_task_handle);
+		xTaskCreate((TaskFunction_t)ade9153a_mesurement_task(NULL), "ade9153a_mesurement_task", 8192, NULL, 1, NULL);
+    }
+}
+
+/**************************************************************
+ *						FREERTOS TASK
+ **************************************************************/
+void ade9153a_mesurement_task(void *parameter)
 {
 	float vHeadRoom;
+	bool checkSPI = false;
+
+	/* Init Pin for startup ADE9153 */
+	esp_output_create(ADE9153_PIN_RESET);
+	esp_output_create(PIN_VSPI_CS);
+	esp_output_create(PIN_VSPI_CLK);
+
+	/* Choose ADE9153 SPI Communication */
+	gpio_set_level(ADE9153_PIN_RESET, 1);
+	gpio_set_level(PIN_VSPI_CS, 0);
+	gpio_set_level(PIN_VSPI_CLK, 1);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
+	gpio_set_level(ADE9153_PIN_RESET, 0);
+
+	/* Initiation SPI to ADE9153 */
+	do
+	{
+		checkSPI = init_spiADE9153(xSPI_HOST, xSPI_CS, xSPI_CLK);
+		vTaskDelay(500 / portTICK_PERIOD_MS);
+#if DEV_MODE
+		if (!checkSPI)
+			printf("SPI config fail\n");
+		else
+			printf("SPI config success\n");
+#endif
+	} while (!checkSPI);
+
+#if TEST_ADE9153
+	while (true)
+	{
+		spi_write32(REG_VNOM, 12);
+		vTaskDelay(1000/portTICK_PERIOD_MS);
+		ESP_LOGI(TAG, "REG_VNOM: %ld" ,spi_read32(REG_VNOM));
+	}
+#endif
 
 	/* compute targetXCC */
 	RMSRegs.targetAICC = calculate_target_aicc(RSHUNT, PGAGAIN);
-	printf("targetAICC: %f\n", RMSRegs.targetAICC);
-	RMSRegs.targetAVCC = calculate_target_avcc(RBIG, RSMALL,
-											   &vHeadRoom);
-	printf("targetAVCC: %f\n", RMSRegs.targetAVCC);
-	PowRegs.targetPowCC = calculate_target_powCC(RMSRegs.targetAICC,
-												 RMSRegs.targetAVCC);
-	printf("targetPowCC: %f\n", PowRegs.targetPowCC);
+	RMSRegs.targetAVCC = calculate_target_avcc(RBIG, RSMALL, &vHeadRoom);
+	PowRegs.targetPowCC = calculate_target_powCC(RMSRegs.targetAICC, RMSRegs.targetAVCC);
+
 	while (true)
 	{
-		printf("\nADE Mesurement: \n");
 		ADE9153_read_RMSRegs(&RMSRegs);
 		ADE9153_read_PowRegs(&PowRegs);
 		ADE9153_read_PQRegs(&PQRegs);
+		devData.RMSValues = RMSRegs;
+		devData.PowValues = PowRegs;
+		devData.PQValues = PQRegs;
+#if DEV_MODE
 		printf("|- RMSRegs:\n");
 		printf("|---- AIReg: %lx and AIValue: %f\n", RMSRegs.AIReg,
 			   RMSRegs.AIValue);
@@ -101,68 +158,54 @@ void measurementADE(void *pvParameter)
 			   PQRegs.freqValue);
 		printf("|---- angleAV_AIReg: %lx and angleAV_AIValue: %f\n",
 			   PQRegs.angleAV_AIReg, PQRegs.angleAV_AIValue);
-		devData.RMSValues = RMSRegs;
-		devData.PowValues = PowRegs;
-		devData.PQValues = PQRegs;
-		vTaskDelay(periodMeasure / portTICK_PERIOD_MS);
+#endif
+		vTaskDelay(MESURE_PERIOD / portTICK_PERIOD_MS);
 	}
 }
 
-void esp_output_create(int pin)
+void check_wifi_task(void *param)
 {
-	gpio_config_t pin_config = {
-		1LL << pin,
-		GPIO_MODE_OUTPUT,
-		GPIO_PULLUP_DISABLE,
-		GPIO_PULLDOWN_DISABLE,
-		GPIO_INTR_DISABLE};
-	gpio_config(&pin_config);
-	gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+    while (1)
+    {
+        xSemaphoreTake(sem, portMAX_DELAY);
+        save_router_and_clientid_infor(infor.router_ssid, infor.router_password, infor.client_id);
+        wifi_connect(infor.router_ssid, infor.router_password);
+    }
 }
 
-void app_main(void)
+void request_join_wifi_mesh_task(void *param)
 {
+    char mac[6] = {0x00};
+    char mac_str[15] = {0x00};
+    char clientid[60];
+    char data[100];
+    get_mac_address(mac);
+    mac_to_string(mac, mac_str);
+    read_clientid_from_flash(clientid);
+    ESP_LOGI(TAG, "%s and %s ", mac_str, clientid);
+    create_join_request_json(mac_str, clientid, data);
+    while (1)
+    {
+        mqtt_app_publish("/join_request", data, 1);
+        delay_ms(10000);
+    }
+}
 
-	esp_output_create(ADE9153_PIN_RESET);
-	esp_output_create(PIN_VSPI_CS);
-	esp_output_create(PIN_VSPI_CLK);
-	esp_output_create(CTRL_ISO_PIN_OUT);
-
-	gpio_set_level(ADE9153_PIN_RESET, 1);
-
-	while (true)
-	{
-		gpio_set_level(CTRL_ISO_PIN_OUT, 1);
-		printf("ON\n");
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-		gpio_set_level(CTRL_ISO_PIN_OUT, 0);
-		printf("OFF\n");
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-	}
-
-	gpio_set_level(PIN_VSPI_CS, 0);
-	gpio_set_level(PIN_VSPI_CLK, 1);
-
-	vTaskDelay(100 / portTICK_PERIOD_MS);
-
-	gpio_set_level(ADE9153_PIN_RESET, 0);
-
-	bool checkSPI = false;
-	do
-	{
-		/* Initiation SPI to ADE9153 */
-		checkSPI = init_spiADE9153(xSPI_HOST, xSPI_CS, xSPI_CLK);
-		if (!checkSPI)
-		{
-			printf("SPI config fail\n");
-		}
-		else
-		{
-			printf("SPI config success\n");
-		}
-		vTaskDelay(500 / portTICK_PERIOD_MS);
-	} while (!checkSPI);
-
-	/* Start mesurement */
-	measurementADE(NULL);
+void send_ui_to_cloud_task(void *parameter)
+{
+    char data[200];
+    const char *client_id = (const char *)parameter;
+    char mac[6] = {0x00};
+    char mac_str[13] = {0x00};
+    ESP_LOGI("TASK", "Client ID in task: %s", client_id);
+    get_mac_address(mac);
+    mac_to_string(mac, mac_str);
+    float i = 0.0;
+    while (1)
+    {
+        i++;
+        create_voltage_current_json(client_id, mac_str, i, i, data, sizeof(data));
+        mqtt_app_publish("/ui", data, 1);
+        delay_ms(PERIOD_MS);
+    }
 }

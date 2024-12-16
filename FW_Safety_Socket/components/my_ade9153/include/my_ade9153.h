@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "ade9153a.h"
 #include "driver/spi_master.h"
 
 /**************************************************************
