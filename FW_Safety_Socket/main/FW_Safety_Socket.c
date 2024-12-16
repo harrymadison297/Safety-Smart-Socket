@@ -35,6 +35,82 @@ void esp_output_create(int pin)
 	gpio_set_direction(pin, GPIO_MODE_OUTPUT);
 }
 
+void mqtt_recv_data_cb(char *topic, char *data)
+{
+    ESP_LOGI(TAG, "Get data from broker");
+    ESP_LOGI(TAG, "%s", topic);
+    ESP_LOGI(TAG, "%s", data);
+    cJSON *json = cJSON_Parse(data);
+    if (json == NULL)
+    {
+        ESP_LOGE(TAG, "PARSE MQTT DATA FAIL");
+        return;
+    }
+    const int cmd = cJSON_GetObjectItem(json, "cmd")->valueint;
+    switch (cmd)
+    {
+    case JOIN_NETWORK_ACCEPT:
+
+        const char *mesh_id = cJSON_GetObjectItem(json, "mesh_id")->valuestring;
+        const char *softap_pw = cJSON_GetObjectItem(json, "softap_pw")->valuestring;
+        ESP_LOGI(TAG, "Accept join mesh id : %s and softap password %s", mesh_id, softap_pw);
+        save_mesh_credentials(mesh_id, softap_pw);
+        save_flag_to_flash(true);
+        esp_restart();
+        break;
+    case RESET_SOFTAP_PASSWORD:
+        break;
+    case RESET_CHIP:
+        nvs_flash_erase();
+        esp_restart();
+        break;
+
+    default:
+        break;
+    }
+}
+
+void mqtt_sub_mac_topic_sc_cb(void)
+{
+    xTaskCreate((TaskFunction_t)request_join_wifi_mesh_task, "request join network", 4096, NULL, 1, NULL);
+}
+
+void wifi_connect_status_cb(bool status)
+{
+    switch (status)
+    {
+    case true:
+        ESP_LOGI("WIFI STATUS CALLBACK", "OK");
+        send_message_to_phone("OK", 2);
+        mqtt_app_start("mqtt://white-dev.aithings.vn:1883");
+        vTaskDelete(check_connect_wifi_task_handle);
+        vSemaphoreDelete(sem);
+        break;
+    case false:
+        ESP_LOGI("WIFI STATUS CALLBACK", "OK");
+        send_message_to_phone("FAIL", 4);
+        prepare_reset();
+        esp_restart();
+    default:
+        break;
+    }
+}
+
+void ble_recv_callback(char *data)
+{
+    ESP_LOGI(TAG, "Get data from phone %s", data);
+    infor = parse_router_and_clientid_infor(data);
+    if (strcmp(infor.ble_pw, BLE_PASSWORD) == 0)
+    {
+        xTaskCreate((TaskFunction_t)check_wifi_task, "Check wifi task", 8192, NULL, 1, (TaskHandle_t *)check_connect_wifi_task_handle);
+        xSemaphoreGive(sem);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "ble password wrong");
+    }
+}
+
 /**************************************************************
  *						MAIN FUNCTION
  **************************************************************/
