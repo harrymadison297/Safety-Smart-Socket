@@ -18,7 +18,7 @@ static PQRegs_t PQRegs;
 static ACALRegs_t ACALRegs;
 static device_data_t devData;
 /* Semaphore for BLE and Wifi Config */
-static SemaphoreHandle_t sem = xSemaphoreCreateBinary();
+static SemaphoreHandle_t sem;
 
 /**************************************************************
  *						TOOLS FUNCTIONS
@@ -131,6 +131,8 @@ void app_main(void)
     value = read_flag_from_flash();
 	ESP_LOGI(TAG, "Value = %d", value);
 
+	sem = xSemaphoreCreateBinary();
+
     if (value == WIFI_MESH_NOT_INIT)
     {
         BLE_SERVER_INIT();
@@ -153,7 +155,7 @@ void app_main(void)
         esp_wifi_mesh_init(infor.router_ssid, infor.router_password, softap_pw, mesh_id_u8);
         mqtt_app_start("mqtt://white-dev.aithings.vn:1883");
         xTaskCreate((TaskFunction_t)send_ui_to_cloud_task, "send_ui_to_cloud_task", 8192, (void *)infor.client_id, 1, (TaskHandle_t *)ui_task_handle);
-		xTaskCreate((TaskFunction_t)ade9153a_mesurement_task(NULL), "ade9153a_mesurement_task", 8192, NULL, 1, NULL);
+		xTaskCreate((TaskFunction_t)ade9153a_mesurement_task, "ade9153a_mesurement_task", 8192, NULL, 1, NULL);
     }
 }
 
@@ -282,6 +284,6 @@ void send_ui_to_cloud_task(void *parameter)
         i++;
         create_voltage_current_json(client_id, mac_str, i, i, data, sizeof(data));
         mqtt_app_publish("/ui", data, 1);
-        delay_ms(PERIOD_MS);
+        delay_ms(500);
     }
 }
