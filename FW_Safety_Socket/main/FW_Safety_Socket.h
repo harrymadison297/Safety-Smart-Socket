@@ -23,44 +23,50 @@
 /**
  * ESP32 Log Config
  */
-#define TAG "MAIN"
+#define TAG 				"MAIN"
 
 /**
  * BLE Config
  */
-#define BLE_PASSWORD "123456"
+#define BLE_PASSWORD 		"123456"
+
+/**
+ * MQTT Config
+ */
+#define MQTT_BROKER 		"mqtt://white-dev.aithings.vn:1883"
+#define JOIN_REQ_FREQ 		10000
 
 /**
  * GPIO Define
  */
-#define CTRL_ISO_PIN_OUT 26
-#define STATE_LED_PIN_OUT 14
-#define CONTROL_BUTTON_PIN_IN 
+#define CTRL_ISO_PIN_OUT 	26
+#define STATE_LED_PIN_OUT 	14
+#define CONTROL_BUTTON_PIN	27
 
 /**
  * ADE9153A Configuration
  */
-#define ADE9153_PIN_RESET 22
-#define RSHUNT 0.002 /* Ohm */
-#define PGAGAIN 16
-#define RBIG 1000000 /* Ohm */
-#define RSMALL 1000	 /* Ohm */
+#define ADE9153_PIN_RESET 	22
+#define RSHUNT 				0.002 	/* Ohm */
+#define PGAGAIN 			16
+#define RBIG 				1000000 /* Ohm */
+#define RSMALL 				1000	/* Ohm */
 
-#define xSPI_HOST VSPI_HOST
-#define xSPI_CS -1
-#define xSPI_CLK (1 * 1000 * 1000)
+#define xSPI_HOST 			VSPI_HOST
+#define xSPI_CS 			-1
+#define xSPI_CLK 			(1 * 1000 * 1000)
 
-#define MESURE_PERIOD 500 /* ms */
+#define xSPI_INIT_DELAY 	100 	/* ms */
+#define MESURE_PERIOD 		500 	/* ms */
 
-/**
- * Typedef struct, enum, ...
- */
+/* Typedef Wifi Mesh Initial State */
 typedef enum
 {
     WIFI_MESH_NOT_INIT = false,
     WIFI_MESH_OK = true,
 } wifi_mesh_init_e;
 
+/* Typedef ADE9153A Data Interface */
 typedef struct
 {
 	char *pNameDevice;

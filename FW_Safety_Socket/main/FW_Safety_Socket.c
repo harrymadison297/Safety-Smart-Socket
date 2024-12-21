@@ -82,7 +82,7 @@ void wifi_connect_status_cb(bool status)
     case true:
         ESP_LOGI("WIFI STATUS CALLBACK", "OK");
         send_message_to_phone("OK", 2);
-        mqtt_app_start("mqtt://white-dev.aithings.vn:1883");
+        mqtt_app_start(MQTT_BROKER);
         vTaskDelete(check_connect_wifi_task_handle);
         vSemaphoreDelete(sem);
         break;
@@ -153,7 +153,7 @@ void app_main(void)
         get_mesh_credentials(mesh_id, softap_pw);
         hex_string_to_u8_array(mesh_id, mesh_id_u8);
         esp_wifi_mesh_init(infor.router_ssid, infor.router_password, softap_pw, mesh_id_u8);
-        mqtt_app_start("mqtt://white-dev.aithings.vn:1883");
+        mqtt_app_start(MQTT_BROKER);
         xTaskCreate((TaskFunction_t)send_ui_to_cloud_task, "send_ui_to_cloud_task", 8192, (void *)infor.client_id, 1, (TaskHandle_t *)ui_task_handle);
 		xTaskCreate((TaskFunction_t)ade9153a_mesurement_task, "ade9153a_mesurement_task", 8192, NULL, 1, NULL);
     }
@@ -265,7 +265,7 @@ void request_join_wifi_mesh_task(void *param)
     while (1)
     {
         mqtt_app_publish("/join_request", data, 1);
-        delay_ms(10000);
+        delay_ms(JOIN_REQ_FREQ);
     }
 }
 
@@ -282,8 +282,8 @@ void send_ui_to_cloud_task(void *parameter)
     while (1)
     {
         i++;
-        create_voltage_current_json(client_id, mac_str, i, i, data, sizeof(data));
+        create_voltage_current_json(client_id, mac_str, devData.RMSValues.AVValue, devData.RMSValues.AIValue, data, sizeof(data));
         mqtt_app_publish("/ui", data, 1);
-        delay_ms(500);
+        delay_ms(MESURE_PERIOD);
     }
 }
