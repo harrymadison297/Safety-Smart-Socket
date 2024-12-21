@@ -1,22 +1,26 @@
 {
-  "name": "safety_socket_cloud",
+  "name": "cloud_safety_socket",
   "version": "1.0.0",
-  "description": "Cloud management for Safety Smart Socket",
+  "description": "",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "HarryMadison297",
+  "author": "harrymadison297",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.716.0",
+    "aws-sdk": "^2.1692.0",
     "body-parser": "^1.20.3",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "helmet": "^8.0.0",
-    "mongoose": "^8.8.2",
-    "morgan": "^1.10.0"
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

@@ -1,0 +1,164 @@
+{
+    "openapi": "3.0.3",
+    "servers": [
+        {
+            "url": "http://localhost:3000",
+            "description": "User application port"
+        },
+        {
+            "url": "http://localhost:6000",
+            "description": "Manufactor application port"
+        }
+    ],
+    "tags": [
+        {
+            "name": "user",
+            "description": "User application API"
+        },
+        {
+            "name": "store",
+            "description": "Manufactor application API"
+        }
+    ],
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:3000",
+                        "description": "User application port"
+                    }
+                ],
+                "summary": "Logs user into the system",
+                "description": "",
+                "requestBody": {
+                    "content": {
+                        "application/json" : {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "username": "trinhcuong297@gmail.com",
+                                "password": "123456"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "JSON Webtoken"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid username/password supplied"
+                    }
+                }
+            }
+        },
+        "/auth/signup": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:3000",
+                        "description": "User application port"
+                    }
+                ],
+                "summary": "Sign up user into the system",
+                "description": "",
+                "requestBody": {
+                    "content": {
+                        "application/json" : {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "username": "trinhcuong297@gmail.com",
+                                "password": "123456"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "JSON Webtoken"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "get": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Logs out current logged in user session",
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "default": {
+                        "description": "successful operation"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 10
+                    },
+                    "username": {
+                        "type": "string",
+                        "example": "theUser"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "john@email.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "userStatus": {
+                        "type": "integer",
+                        "description": "User Status",
+                        "format": "int32",
+                        "example": 1
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "api_key": {
+                "type": "apiKey",
+                "name": "api_key",
+                "in": "header"
+            }
+        }
+    }
+}

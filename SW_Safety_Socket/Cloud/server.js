@@ -1,25 +1,21 @@
 import { configDotenv } from "dotenv";
-import process from "process";
-import instanceMongoDB from "./src/databases/mongodb.js";
-import DeviceInputService from "./src/services/DeviceInputService.js";
+import manufactorApp from "./src/applications/manufactor.app.js"
+import userApp from "./src/applications/user.app.js";
 
-// // init environment *************************************
+/* Use variable from .env */
 configDotenv();
 
-// init database ****************************************
-instanceMongoDB; // Connect MongoDB
+/* Set port for service application */
+const usr_port = process.env.APP_USER_PORT || 3000
+const fol_port = process.env.FOLLOW_DEVICE_PORT || 4000
+const ctl_port = process.env.CONTROL_DEVICE_PORT || 5000
+const man_port = process.env.APP_MANF_PORT || 6000
 
-const deviceInputServicePort = process.env.DEVICE_IN_PORT || 3001;
-const deviceOutputServicePort = process.env.DEVICE_OUT_PORT || 3002;
-const controlServicePort = process.env.CONTROL_PORT || 3003;
-const applicationServicePort = process.env.APPLICATION_PORT || 3004;
+/* Open port listener */
+userApp.listen(usr_port, () => {
+    console.info("User application listening on port", usr_port);
+})
 
-const DeviceInputListener = DeviceInputService.listen(deviceInputServicePort, () => {
-  console.log("Listening on port ", deviceInputServicePort);
-});
-
-const DeviceOutputListener = 
-
-process.on("SIGINT", () => {
-  DeviceInputListener.close(() => console.log("Device input service exit!"));
-});
+manufactorApp.listen(man_port, () => {
+    console.info("Manufactor application listening on port", man_port);
+})
