@@ -41,7 +41,7 @@
                                 "type": "string"
                             },
                             "example": {
-                                "username": "trinhcuong297@gmail.com",
+                                "email": "trinhcuong297@gmail.com",
                                 "password": "123456"
                             }
                         }
@@ -55,12 +55,40 @@
                                 "schema": {
                                     "type": "string"
                                 },
-                                "example": "JSON Webtoken"
+                                "example": {
+                                    "id": "67698e73876ef97e66fc4aac",
+                                    "name": "Trinh Cuong",
+                                    "email": "trinhcuong297@gmail.com",
+                                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzY5OGU3Mzg3NmVmOTdlNjZmYzRhYWMiLCJpYXQiOjE3MzQ5NzE5MjUsImV4cCI6MTczNTE0NDcyNX0.rLNVXX8eFtT_VFP_oWeKK6Fsm-_VVLlJFDnQFVkpbXQ"
+                                }
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid username/password supplied"
+                    "403": {
+                        "description": "Invalid email/password supplied",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Wrong authentication infomation!"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cannot update token to server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Cannot update token to server"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -85,7 +113,8 @@
                                 "type": "string"
                             },
                             "example": {
-                                "username": "trinhcuong297@gmail.com",
+                                "name": "Trinh Cuong",
+                                "email": "trinhcuong297@gmail.com",
                                 "password": "123456"
                             }
                         }
@@ -99,24 +128,12 @@
                                 "schema": {
                                     "type": "string"
                                 },
-                                "example": "JSON Webtoken"
+                                "example": {
+                                    "name": "Trinh Cuong", 
+                                    "email": "trinhcuong297@gmail.com"
+                                }
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/auth/logout": {
-            "get": {
-                "tags": [
-                    "user"
-                ],
-                "summary": "Logs out current logged in user session",
-                "description": "",
-                "parameters": [],
-                "responses": {
-                    "default": {
-                        "description": "successful operation"
                     }
                 }
             }

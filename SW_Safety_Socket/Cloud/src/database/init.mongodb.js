@@ -6,8 +6,9 @@ configDotenv();
 
 const username = process.env.MONGO_USER
 const password = process.env.MONGO_PASSWORD
+const database = process.env.MONGO_DATABASE
 
-const mongoConnectionString = `mongodb+srv://${username}:${password}@safetysocketcluster.urnhb.mongodb.net`
+const mongoConnectionString = `mongodb+srv://${username}:${password}@safetysocketcluster.urnhb.mongodb.net/${database}`
 
 /* Singleton design pattern class to connect to MongoDB */
 class Database {

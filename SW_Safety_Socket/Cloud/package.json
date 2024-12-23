@@ -14,6 +14,7 @@
     "@aws-sdk/client-timestream-query": "^3.716.0",
     "@aws-sdk/client-timestream-write": "^3.716.0",
     "aws-sdk": "^2.1692.0",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
