@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 
 import ErrorResponse from "../helpers/error.response.js"
 import userRouter from "../routes/user/index.js";
+import instanceMongoDB from "../database/init.mongodb.js";
 
 /**
  * Create Express Server instance
@@ -29,6 +30,11 @@ userApp.use(cors(
     "optionsSuccessStatus": 204
   }
 ));
+
+/**
+ * Connect to MongoDB
+ */
+instanceMongoDB;
 
 /**
  * User app routers

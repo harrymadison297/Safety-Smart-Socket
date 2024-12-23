@@ -1,5 +1,5 @@
 variable "prefix" {
   type        = string
-  default     = "terraform_saas"
+  default     = "safety_socket"
   description = "Prefix when namming all aws services name"
 }

@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.716.0",
+    "@aws-sdk/client-timestream-query": "^3.716.0",
+    "@aws-sdk/client-timestream-write": "^3.716.0",
     "aws-sdk": "^2.1692.0",
     "body-parser": "^1.20.3",
     "compression": "^1.7.5",
@@ -19,6 +21,8 @@
     "express": "^4.21.2",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
+    "mongo": "^0.1.0",
+    "mongoose": "^8.9.2",
     "morgan": "^1.10.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"

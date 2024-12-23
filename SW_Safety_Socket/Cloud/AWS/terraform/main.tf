@@ -13,7 +13,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Create S3 Bucket
-module "terraform_saas_s3" {
-  source = "./s3"
+# Create DynamoDB
+module "safety_socket_dynamodb" {
+  source = "./dynamodb"
 }
