@@ -1,6 +1,6 @@
 import express from "express"
 import asyncMiddlewareHandler from "../../services/middleware.service.js"
-import UserDeviceController from "../../controllers/device.user.controllers.js"
+import UserDeviceController from "../../controllers/device.user.controller.js"
 
 const userDeviceRouter = express.Router()
 

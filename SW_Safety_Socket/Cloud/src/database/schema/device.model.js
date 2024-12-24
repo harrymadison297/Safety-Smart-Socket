@@ -13,9 +13,10 @@ var deviceSchema = new mongoose.Schema(
       maxLength: 20,
       minLength: 5,
     },
-    devicePublic: {
+    mac: {
       type: String,
       trim: true,
+      require: true,
       unique: true,
     },
     deviceSecret: {

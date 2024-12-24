@@ -1,6 +1,6 @@
 import express from "express"
 import asyncMiddlewareHandler from "../../services/middleware.service.js"
-import UserAuthController from "../../controllers/auth.user.controllers.js"
+import UserAuthController from "../../controllers/auth.user.controller.js"
 
 const userAuthRouter = express.Router()
 

@@ -1,49 +1,41 @@
 import express from "express"
 import swaggerUi from "swagger-ui-express"
-import swaggerJSDoc from "swagger-jsdoc";
+import compression from "compression";
+import Express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+import cors from "cors";
+import bodyParser from "body-parser";
+
 import swaggerDocs from "../swagger/swagger.json" with { type: "json" };
+import manufactorRouter from "../routes/manufactor/index.js";
+import instanceMongoDB from "../database/init.mongodb.js";
 
 const manufactorApp = express();
 
-const options = {
-    definition: {
-        openapi: "3.1.0",
-        info: {
-            title: "Safety Socket Express API with Swagger",
-            version: "0.1.0",
-            description:
-                "This is a simple CRUD API application made with Express and documented with Swagger",
-            license: {
-                name: "MIT",
-                url: "https://spdx.org/licenses/MIT.html",
-            },
-            contact: {
-                name: "Harry Madison",
-                url: "https://harrymadison297.vercel.app",
-                email: "harrymadison297@gmail.com",
-            },
-        },
-        servers: [
-            {
-              url: "http://localhost:3000",
-            },
-          ],
-        tags: [
-            {
-                name: "user",
-                description: "User API"
-            },
-            {
-                name: "manu",
-                description: "Manufactor API"
-            }
-        ], 
-    },
-    apis: ["./src/routes/*/*.js"],
-};
+/**
+ * Setup middleware
+ */
+manufactorApp.use(morgan("combined"));                            // System log
+manufactorApp.use(helmet());                                      // Header protect
+manufactorApp.use(compression());                                 // Compress output
+manufactorApp.use(bodyParser.json());                             // Parsing application/json
+manufactorApp.use(bodyParser.urlencoded({ extended: true }));     // Parsing application/x-www-form-urlencoded
+manufactorApp.use(cors(
+  {
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    "preflightContinue": false,
+    "optionsSuccessStatus": 204
+  }
+));
 
-const specs = swaggerJSDoc(options);
+/**
+ * Connect to MongoDB
+ */
+instanceMongoDB;
 
 manufactorApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+manufactorApp.use('/manf', manufactorRouter);
 
 export default manufactorApp

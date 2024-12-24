@@ -6,7 +6,7 @@
             "description": "User application port"
         },
         {
-            "url": "http://localhost:6000",
+            "url": "http://localhost:6060",
             "description": "Manufactor application port"
         }
     ],
@@ -16,7 +16,7 @@
             "description": "User application API"
         },
         {
-            "name": "store",
+            "name": "manufactor",
             "description": "Manufactor application API"
         }
     ],
@@ -174,6 +174,163 @@
                         "CLIENT_ID": []
                     }
                 ]
+            }
+        },
+        "/manf/device/signup": {
+            "post": {
+                "tags": [
+                    "manufactor"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:6060",
+                        "description": "Manufactor application port"
+                    }
+                ],
+                "summary": "Sign up new devices",
+                "description": "This API is specific for Manufactor",
+                "requestBody": {
+                    "content": {
+                        "application/json" : {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "name": "Device 1",
+                                "mac": "abcd1234"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "devices": []
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/manf/device/delete": {
+            "post": {
+                "tags": [
+                    "manufactor"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:6060",
+                        "description": "Manufactor application port"
+                    }
+                ],
+                "summary": "Delete a device",
+                "description": "This API is specific for Manufactor",
+                "requestBody": {
+                    "content": {
+                        "application/json" : {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "id": "12345216a010e5abdf004512"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "devices": []
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/manf/device/one": {
+            "post": {
+                "tags": [
+                    "manufactor"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:6060",
+                        "description": "Manufactor application port"
+                    }
+                ],
+                "summary": "Get a device info",
+                "description": "This API is specific for Manufactor",
+                "requestBody": {
+                    "content": {
+                        "application/json" : {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "id": "12345216a010e5abdf004512"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "devices": []
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/manf/device/": {
+            "get": {
+                "tags": [
+                    "manufactor"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:6060",
+                        "description": "Manufactor application port"
+                    }
+                ],
+                "summary": "Get a device info",
+                "description": "This API is specific for Manufactor",
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "devices": []
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
