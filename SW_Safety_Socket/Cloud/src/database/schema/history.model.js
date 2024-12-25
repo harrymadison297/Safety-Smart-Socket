@@ -5,7 +5,7 @@ const COLLECTION_NAME = 'HISTORY'
 // Declare the Schema of the Mongo model
 // switchDevice
 var historySchema = new mongoose.Schema({
-  deviceID: {
+  device: {
     type: Schema.Types.ObjectId,
     require: true,
     ref: "Device"

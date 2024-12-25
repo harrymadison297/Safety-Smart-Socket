@@ -4,21 +4,35 @@ const DOCUMENT_NAME = 'Timer'
 const COLLECTION_NAME = 'TIMER'
 // Declare the User Schema of the Mongo model
 const timerSchema = new mongoose.Schema({
-    deviceID: {
-        type: String,
+    device: {
+        type: Schema.Types.ObjectId,
+        require: true,
+        ref: "Device"
+      },
+    timeset: {
+        type: Number,
         require: true
     },
-    timeset: {
-        type: Date,
-        require: true
+    timedone:{
+        type: Number,
+        default: 0
     },
     value: {
         type: Object,
         require: true
     },
-    status: {
-        type: String,
+    active: {
+        type: Boolean,
         require: true,
+        default: true
+    },
+    retry: {
+        type: Number,
+        default: 1
+    },
+    preset: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,

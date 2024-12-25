@@ -1,0 +1,48 @@
+Table User {
+  _id string pk
+  name string [not null]
+  email string unique
+  password string
+}
+
+Table Key {
+  _id string pk
+  user string [ref: - User._id]
+  accessToken string
+}
+
+Table Mesh {
+  _id string pk
+  user string [ref: - User._id]
+  name string
+  meshId string
+  meshPass string
+}
+
+Table Device {
+  _id string pk
+  ownUser string [ref: - User._id]
+  name string
+  mac string
+  deviceSecret string
+  value object
+  meshNetwork string [ref: - Mesh._id]
+}
+
+Table History {
+  _id string pk
+  _timestamp timestamp
+  device string [ref: > Device._id]
+  value object
+}
+
+Table Timer {
+  _id string pk
+  device string [ref: - Device._id]
+  timeset number
+  timedone number [default: 0]
+  value object 
+  active boolean [default: true]
+  retry number [default: 1]
+  preset boolean [default: false]
+}
