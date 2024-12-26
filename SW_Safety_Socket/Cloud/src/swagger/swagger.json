@@ -197,7 +197,9 @@
                             },
                             "example": {
                                 "name": "Device 1",
-                                "mac": "abcd1234"
+                                "mac": "abcd1234",
+                                "public": "PublishKey",
+                                "secret": "SecretKey"
                             }
                         }
                     }

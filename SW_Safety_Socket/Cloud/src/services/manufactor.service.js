@@ -2,7 +2,7 @@ import DeviceModel from "../database/schema/device.model.js";
 import ErrorResponse from "../helpers/error.response.js";
 
 class ManufactorService {
-  signupDevice = async ({ name, mac }) => {
+  signupDevice = async ({ name, mac, public, secret }) => {
     if (!name || !mac) {
       throw new ErrorResponse("Wrong param", 404);
     }
@@ -15,7 +15,9 @@ class ManufactorService {
 
     const newDevice = await DeviceModel.create({
       name: name,
-      mac: mac
+      mac: mac,
+      devicePublic: public,
+      deviceSecret: secret
     });
     if (!newDevice) {
       throw new ErrorResponse("can't not sign up for this device", 500);

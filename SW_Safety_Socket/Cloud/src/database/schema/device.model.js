@@ -15,13 +15,16 @@ var deviceSchema = new mongoose.Schema(
     },
     mac: {
       type: String,
-      trim: true,
       require: true,
       unique: true,
     },
+    devicePublic: {
+      type: String,
+      require: true,
+    },
     deviceSecret: {
       type: String,
-      trim: true,
+      require: true,
     },
     value: {
       type: Object,

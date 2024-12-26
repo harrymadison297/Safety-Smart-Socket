@@ -24,6 +24,7 @@ Table Device {
   ownUser string [ref: - User._id]
   name string
   mac string
+  devicePublic string
   deviceSecret string
   value object
   meshNetwork string [ref: - Mesh._id]
