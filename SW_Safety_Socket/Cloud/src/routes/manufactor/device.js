@@ -6,7 +6,7 @@ const manufactorDeviceRouter = express.Router()
 
 manufactorDeviceRouter
     .post('/signup', asyncMiddlewareHandler(manufactorController.signupDeviceInfo))
-    .post('/delete', asyncMiddlewareHandler(manufactorController.deleteDevice))
+    .delete('/delete', asyncMiddlewareHandler(manufactorController.deleteDevice))
     .post('/one', asyncMiddlewareHandler(manufactorController.getDeviceInfo))
     .get('/', asyncMiddlewareHandler(manufactorController.getAllDevices))
 

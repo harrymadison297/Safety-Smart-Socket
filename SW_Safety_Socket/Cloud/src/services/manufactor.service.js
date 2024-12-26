@@ -2,7 +2,7 @@ import DeviceModel from "../database/schema/device.model.js";
 import ErrorResponse from "../helpers/error.response.js";
 
 class ManufactorService {
-  signupDevice = async ({ name, mac, public, secret }) => {
+  signupDevice = async ({ name, mac, devicePublic, deviceSecret }) => {
     if (!name || !mac) {
       throw new ErrorResponse("Wrong param", 404);
     }
@@ -10,20 +10,25 @@ class ManufactorService {
     // Check device exit?
     const holderDevice = await DeviceModel.findOne({ mac: mac }).lean({});
     if (holderDevice) {
-      throw new ErrorResponse("Device exited!", 403);
+      throw new ErrorResponse("Device exited: " + holderDevice._id.toString(), 403);
     }
 
     const newDevice = await DeviceModel.create({
       name: name,
       mac: mac,
-      devicePublic: public,
-      deviceSecret: secret
+      devicePublic: devicePublic,
+      deviceSecret: deviceSecret
     });
     if (!newDevice) {
       throw new ErrorResponse("can't not sign up for this device", 500);
     }
 
-    return newDevice;
+    return {
+      _id: newDevice._id,
+      name: newDevice.name,
+      devicePublic: newDevice.devicePublic,
+      deviceSecret: newDevice.deviceSecret
+    };
   };
 
   getAllDeviceInfo = async () => {

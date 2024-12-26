@@ -16,7 +16,7 @@ class UserDeviceController {
     /* Claim new device */
     claimDevice = async (req, res, next) => {
         console.log("[POST] :: claim new device ::", req.body)
-        return res.status(200).json(await deviceUserService.claimDevice(req.body))
+        return res.status(200).json(await deviceUserService.claimDevice(req))
     }
 
     /* Set meshID for device */

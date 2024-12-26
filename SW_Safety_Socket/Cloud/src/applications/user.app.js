@@ -18,7 +18,16 @@ const userApp = Express();
  * Setup middleware
  */
 userApp.use(morgan("combined"));                            // System log
-userApp.use(helmet());                                      // Header protect
+userApp.use(helmet(                                         // Header protect
+  {
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            connectSrc: ["'self'", "http://localhost:3000"] // Add your API endpoint
+        }
+    }
+}
+));                                                         
 userApp.use(compression());                                 // Compress output
 userApp.use(bodyParser.json());                             // Parsing application/json
 userApp.use(bodyParser.urlencoded({ extended: true }));     // Parsing application/x-www-form-urlencoded

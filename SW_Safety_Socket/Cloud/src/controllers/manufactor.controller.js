@@ -9,7 +9,7 @@ class ManufactorController {
 
   // Delete device by ID controller
   deleteDevice = async (req, res, next) => {
-    console.log("[POST] :: Device ID ::", req.body);
+    console.log("[DELETE] :: Device ID ::", req.body);
     return res.status(200).json(await ManufactorService.deleteDevice(req.body));
   };
 

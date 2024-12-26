@@ -1,5 +1,6 @@
 import DeviceModel from "../database/schema/device.model.js";
 import MeshModel from "../database/schema/mesh.model.js";
+import UserModel from "../database/schema/user.model.js";
 import ErrorResponse from "../helpers/error.response.js";
 
 class DeviceUserService {
@@ -18,7 +19,7 @@ class DeviceUserService {
     try {
       const findedDevice = await DeviceModel.findOne({ mac: mac }).lean({});
       if (!findedDevice) {
-        throw ErrorResponse("Couldn't find this device", 400);
+        throw new ErrorResponse("Couldn't find this device", 400);
       }
       return {
         devicePublic: findedDevice.devicePublic
@@ -28,27 +29,47 @@ class DeviceUserService {
     }
   };
 
-  claimDevice = async ({ mac, secret }) => {
+  claimDevice = async (req) => {
     try {
+      const { mac, secret } = req.body
       const findedDevice = await DeviceModel.findOne({ mac: mac }).lean({});
       if (!findedDevice) {
-        throw ErrorResponse("Couldn't find this device", 400);
+        throw new ErrorResponse("Couldn't find this device", 400);
       }
 
       if (findedDevice.deviceSecret != secret) {
-        throw ErrorResponse("Fail to this claim this device, wrong secret", 404);
+        throw new ErrorResponse("Fail to this claim this device, wrong secret", 404);
       }
 
+      const user = await UserModel.findById(await req.get("CLIENT_ID")).lean({});
+
+      const deviceUpdate = await DeviceModel.findOneAndUpdate(
+        {
+          mac: mac
+        },
+        {
+          ownUser: user._id,
+          meshNetwork: null
+        }
+      )
+
       return {
-        id: findedDevice._id
+        id: deviceUpdate._id,
+        mac: deviceUpdate.mac,
+        devicePublic: deviceUpdate.devicePublic,
+        deviceSecret: deviceUpdate.deviceSecret,
+        value: deviceUpdate.value, 
+        ownUser: deviceUpdate.ownUser, 
+        meshNetwork: deviceUpdate.meshNetwork
       }
     } catch (error) {
       throw new ErrorResponse("Couldn't find this data from server", 500);
     }
   };
 
-  setMesh = async ({ name, meshid, mac }) => {
+  setMesh = async (req) => {
     try {
+      const { name, meshid, mac } = req.body
       let mesh = null;
       const findedMesh = await MeshModel.findOne({ meshid: meshid }).lean({});
 
@@ -80,7 +101,7 @@ class DeviceUserService {
       )
 
       if (!deviceUpdate) {
-        throw ErrorResponse("Couldn't set mesh", 500);
+        throw new ErrorResponse("Couldn't set mesh", 500);
       }
 
       return {

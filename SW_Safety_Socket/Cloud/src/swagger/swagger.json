@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.3",
+    "openapi": "3.1.0",
     "servers": [
         {
             "url": "http://localhost:3000",
@@ -416,8 +416,8 @@
                             "example": {
                                 "name": "Device 1",
                                 "mac": "abcd1234",
-                                "public": "PublishKey",
-                                "secret": "SecretKey"
+                                "devicePublic": "PublishKey",
+                                "deviceSecret": "SecretKey"
                             }
                         }
                     }
@@ -440,7 +440,7 @@
             }
         },
         "/manf/device/delete": {
-            "post": {
+            "delete": {
                 "tags": [
                     "manufactor"
                 ],
