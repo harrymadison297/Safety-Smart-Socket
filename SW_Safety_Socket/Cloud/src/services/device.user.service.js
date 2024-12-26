@@ -13,7 +13,20 @@ class DeviceUserService {
     }
   };
 
-  
+  findbymac = async ({mac}) => {
+    try {
+        const findedDevice = await DeviceModel.findOne({ mac: mac }).lean({});
+        if (!findedDevice) {
+          throw ErrorResponse("Couldn't find this device", 400);
+        }
+        return {
+          id: findedDevice._id,
+          devicePublic: findedDevice.devicePublic
+        }
+    } catch (error) {
+        throw new ErrorResponse("Couldn't find this data from server", 500);
+    }
+  };
 
 }
 

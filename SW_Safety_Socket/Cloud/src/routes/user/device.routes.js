@@ -5,6 +5,7 @@ import UserDeviceController from "../../controllers/device.user.controller.js"
 const userDeviceRouter = express.Router()
 
 userDeviceRouter
-    .get('/all', asyncMiddlewareHandler(UserDeviceController.all))  // Get all devices
+    .get('/all', asyncMiddlewareHandler(UserDeviceController.all))                      // Get all devices
+    .post('/findbymac', asyncMiddlewareHandler(UserDeviceController.findbymac))         // Find device by mac
  
 export default userDeviceRouter
