@@ -13,9 +13,16 @@ class UserDeviceController {
         return res.status(200).json(await deviceUserService.findbymac(req.body))
     }
 
+    /* Claim new device */
     claimDevice = async (req, res, next) => {
         console.log("[POST] :: claim new device ::", req.body)
         return res.status(200).json(await deviceUserService.claimDevice(req.body))
+    }
+
+    /* Set meshID for device */
+    setmesh = async (req, res, next) => {
+        console.log("[POST] :: set mesh network for device ::", req.body)
+        return res.status(200).json(await deviceUserService.setMesh(req))
     }
 }
 

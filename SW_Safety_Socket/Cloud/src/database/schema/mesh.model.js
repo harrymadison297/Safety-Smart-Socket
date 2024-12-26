@@ -14,12 +14,12 @@ const meshSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    meshId: {
+    meshid: {
       type: String,
       trim: true,
       unique: true,
     },
-    meshPass: {
+    meshpass: {
       type: String,
       trim: true,
     },
@@ -29,6 +29,6 @@ const meshSchema = new mongoose.Schema(
   }
 );
 
-const keyTokenModel = mongoose.model(DOCUMENT_NAME, keyTokenSchema);
+const MeshModel = mongoose.model(DOCUMENT_NAME, meshSchema);
 //Export the model
-export default keyTokenModel;
+export default MeshModel;
