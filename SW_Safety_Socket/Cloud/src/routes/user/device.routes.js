@@ -7,5 +7,6 @@ const userDeviceRouter = express.Router()
 userDeviceRouter
     .get('/all', asyncMiddlewareHandler(UserDeviceController.all))                      // Get all devices
     .post('/findbymac', asyncMiddlewareHandler(UserDeviceController.findbymac))         // Find device by mac
+    .post('/claim', asyncMiddlewareHandler(UserDeviceController.claimDevice))           // Claim new device
  
 export default userDeviceRouter

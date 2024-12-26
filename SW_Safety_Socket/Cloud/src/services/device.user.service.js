@@ -20,7 +20,6 @@ class DeviceUserService {
           throw ErrorResponse("Couldn't find this device", 400);
         }
         return {
-          id: findedDevice._id,
           devicePublic: findedDevice.devicePublic
         }
     } catch (error) {
@@ -28,6 +27,24 @@ class DeviceUserService {
     }
   };
 
+  claimDevice = async ({mac, secret}) => {
+    try {
+        const findedDevice = await DeviceModel.findOne({ mac: mac }).lean({});
+        if (!findedDevice) {
+          throw ErrorResponse("Couldn't find this device", 400);
+        }
+
+        if (findedDevice.deviceSecret != secret) {
+          throw ErrorResponse("Fail to this claim this device, wrong secret", 404);
+        }
+
+        return {
+          id: findedDevice._id
+        }
+    } catch (error) {
+        throw new ErrorResponse("Couldn't find this data from server", 500);
+    }
+  };
 }
 
 export default new DeviceUserService();

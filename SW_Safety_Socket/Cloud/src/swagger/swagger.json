@@ -36,7 +36,7 @@
                 "description": "",
                 "requestBody": {
                     "content": {
-                        "application/json" : {
+                        "application/json": {
                             "schema": {
                                 "type": "string"
                             },
@@ -108,7 +108,7 @@
                 "description": "",
                 "requestBody": {
                     "content": {
-                        "application/json" : {
+                        "application/json": {
                             "schema": {
                                 "type": "string"
                             },
@@ -129,7 +129,7 @@
                                     "type": "string"
                                 },
                                 "example": {
-                                    "name": "Trinh Cuong", 
+                                    "name": "Trinh Cuong",
                                     "email": "trinhcuong297@gmail.com"
                                 }
                             }
@@ -176,6 +176,146 @@
                 ]
             }
         },
+        "/device/findbymac": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:3000",
+                        "description": "User application port"
+                    }
+                ],
+                "summary": "Find device by mac",
+                "description": "",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "mac": "0x000000"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "devicePublic": "findedDevice.devicePublic"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Coudn't find device",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Couldn't find this device"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "ACCESS_TOKEN": []
+                    },
+                    {
+                        "CLIENT_ID": []
+                    }
+                ]
+            }
+        },
+        "/device/claim": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:3000",
+                        "description": "User application port"
+                    }
+                ],
+                "summary": "Find device by mac",
+                "description": "",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "mac": "0x000000",
+                                "secret": "SecretKey"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "devicePublic": "findedDevice.devicePublic"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Coudn't find device",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Couldn't find this device"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Wrong secret",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Fail to this claim this device, wrong secret"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "ACCESS_TOKEN": []
+                    },
+                    {
+                        "CLIENT_ID": []
+                    }
+                ]
+            }
+        },
         "/manf/device/signup": {
             "post": {
                 "tags": [
@@ -191,7 +331,7 @@
                 "description": "This API is specific for Manufactor",
                 "requestBody": {
                     "content": {
-                        "application/json" : {
+                        "application/json": {
                             "schema": {
                                 "type": "string"
                             },
@@ -236,7 +376,7 @@
                 "description": "This API is specific for Manufactor",
                 "requestBody": {
                     "content": {
-                        "application/json" : {
+                        "application/json": {
                             "schema": {
                                 "type": "string"
                             },
@@ -278,7 +418,7 @@
                 "description": "This API is specific for Manufactor",
                 "requestBody": {
                     "content": {
-                        "application/json" : {
+                        "application/json": {
                             "schema": {
                                 "type": "string"
                             },
@@ -342,13 +482,10 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "integer",
-                        "format": "int64",
-                        "example": 10
+                        "type": "string"
                     },
-                    "username": {
-                        "type": "string",
-                        "example": "theUser"
+                    "name": {
+                        "type": "string"
                     },
                     "email": {
                         "type": "string",
@@ -357,12 +494,97 @@
                     "password": {
                         "type": "string",
                         "example": "12345"
+                    }
+                }
+            },
+            "Device": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
                     },
-                    "userStatus": {
-                        "type": "integer",
-                        "description": "User Status",
-                        "format": "int32",
-                        "example": 1
+                    "mac": {
+                        "type": "string"
+                    },
+                    "devicePublic": {
+                        "type": "string"
+                    },
+                    "deviceSecret": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "object"
+                    },
+                    "ownUser": {
+                        "type": "string"
+                    },
+                    "meshNetwork": {
+                        "type": "string"
+                    }
+                }
+            },
+            "History": {
+                "type": "object",
+                "properties": {
+                    "device": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "Key": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "string"
+                    },
+                    "accessToken": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Mesh": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "meshId": {
+                        "type": "string"
+                    },
+                    "meshPass": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Timer": {
+                "type": "object",
+                "properties": {
+                    "device": {
+                        "type": "string"
+                    },
+                    "timeset": {
+                        "type": "integer"
+                    },
+                    "value": {
+                        "type": "object"
+                    },
+                    "active": {
+                        "type": "string"
+                    },
+                    "retry": {
+                        "type": "integer"
+                    },
+                    "preset": {
+                        "type": "string"
                     }
                 }
             }
