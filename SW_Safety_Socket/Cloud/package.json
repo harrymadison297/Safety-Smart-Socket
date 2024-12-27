@@ -25,6 +25,7 @@
     "mongo": "^0.1.0",
     "mongoose": "^8.9.2",
     "morgan": "^1.10.0",
+    "mqtt": "^5.10.3",
     "swagger-ui-express": "^5.0.1"
   }
 }

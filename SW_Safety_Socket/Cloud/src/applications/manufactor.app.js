@@ -1,7 +1,6 @@
-import express from "express"
+import Express from "express"
 import swaggerUi from "swagger-ui-express"
 import compression from "compression";
-import Express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
@@ -11,7 +10,7 @@ import swaggerDocs from "../swagger/swagger.json" with { type: "json" };
 import manufactorRouter from "../routes/manufactor/index.js";
 import instanceMongoDB from "../database/init.mongodb.js";
 
-const manufactorApp = express();
+const manufactorApp = Express();
 
 /**
  * Setup middleware
