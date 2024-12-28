@@ -24,6 +24,12 @@ class UserDeviceController {
         console.log("[POST] :: set mesh network for device ::", req.body)
         return res.status(200).json(await deviceUserService.setMesh(req))
     }
+
+    /* Show device history */
+    history = async (req, res, next) => {
+        console.log("[GET] :: Show device history ::", req.body)
+        return res.status(200).json(await deviceUserService.history(req))
+    }
 }
 
 export default new UserDeviceController

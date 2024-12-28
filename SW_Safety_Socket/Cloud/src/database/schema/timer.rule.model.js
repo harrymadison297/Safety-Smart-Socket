@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const DOCUMENT_NAME = 'Timer'
 const COLLECTION_NAME = 'TIMER'

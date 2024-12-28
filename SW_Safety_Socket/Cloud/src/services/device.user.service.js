@@ -1,4 +1,5 @@
 import DeviceModel from "../database/schema/device.model.js";
+import HistoryModel from "../database/schema/history.model.js";
 import MeshModel from "../database/schema/mesh.model.js";
 import UserModel from "../database/schema/user.model.js";
 import ErrorResponse from "../helpers/error.response.js";
@@ -58,8 +59,8 @@ class DeviceUserService {
         mac: deviceUpdate.mac,
         devicePublic: deviceUpdate.devicePublic,
         deviceSecret: deviceUpdate.deviceSecret,
-        value: deviceUpdate.value, 
-        ownUser: deviceUpdate.ownUser, 
+        value: deviceUpdate.value,
+        ownUser: deviceUpdate.ownUser,
         meshNetwork: deviceUpdate.meshNetwork
       }
     } catch (error) {
@@ -111,6 +112,29 @@ class DeviceUserService {
       throw new ErrorResponse("Couldn't find this data from server", 500);
     }
   };
+
+  history = async (req) => {
+    const userid = await req.get("CLIENT_ID");
+    const { mac, limit } = await req.params;
+
+    const device = await DeviceModel.findOne({ mac: mac }).lean({});
+    if (!device || device.ownUser != userid) {
+      throw new ErrorResponse("This not your device!", 400);
+    }
+
+    const history = await HistoryModel.find(
+      {
+        device: device._id
+      },
+      null,
+      {
+        sort: { _id: -1 },
+        limit: parseInt(limit),
+        lean: {}
+      }
+    );
+    return history
+  }
 }
 
 export default new DeviceUserService();
