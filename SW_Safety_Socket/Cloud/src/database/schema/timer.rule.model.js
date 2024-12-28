@@ -21,8 +21,8 @@ const timerSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    value: {
-        type: String,
+    state: {
+        type: Boolean,
         require: true
     },
     active: {

@@ -21,7 +21,13 @@ class MQTTPublishService {
                 if (e.preset || e.timeset < current) {
                     instanceMqtt.mqttClient.publish(
                         "/mac/"+e.mac,
-                        e.value
+                        JSON.stringify(
+                            {
+                                cmd: 4,
+                                timeout: e.timeset - current,
+                                control: e.state ? 1 : 0
+                            }
+                        )
                     )
                     TimerModel.updateOne(
                         {
