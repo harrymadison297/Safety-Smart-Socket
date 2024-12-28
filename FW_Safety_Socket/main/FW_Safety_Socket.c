@@ -5,7 +5,7 @@
 
 #include "FW_Safety_Socket.h"
 
-#define DEV_MODE 1
+#define DEV_MODE 0
 #define TEST_ADE9153 0
 
 /**************************************************************
@@ -278,12 +278,15 @@ void send_ui_to_cloud_task(void *parameter)
     ESP_LOGI("TASK", "Client ID in task: %s", client_id);
     get_mac_address(mac);
     mac_to_string(mac, mac_str);
+    char mqtt_topic[18];
+    strcpy(mqtt_topic, "/mac/");
+    strcat(mqtt_topic, mac_str);
     float i = 0.0;
     while (1)
     {
         i++;
         create_voltage_current_json(client_id, mac_str, devData.RMSValues.AVValue, devData.RMSValues.AIValue, data, sizeof(data));
-        mqtt_app_publish("/ui", data, 1);
+        mqtt_app_publish(mqtt_topic, data, 1);
         delay_ms(MESURE_PERIOD);
     }
 }
