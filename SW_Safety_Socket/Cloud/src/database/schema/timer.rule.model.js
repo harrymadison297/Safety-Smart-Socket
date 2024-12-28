@@ -8,7 +8,11 @@ const timerSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         require: true,
         ref: "Device"
-      },
+    },
+    mac: {
+        type: String,
+        require: true
+    },
     timeset: {
         type: Number,
         require: true
@@ -18,7 +22,7 @@ const timerSchema = new mongoose.Schema({
         default: 0
     },
     value: {
-        type: Object,
+        type: String,
         require: true
     },
     active: {

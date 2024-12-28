@@ -610,8 +610,11 @@
                     "value": {
                         "type": "string"
                     },
-                    "timestamp": {
-                        "type": "integer"
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
                     }
                 }
             },

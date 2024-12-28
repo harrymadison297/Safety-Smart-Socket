@@ -21,7 +21,7 @@ class MqttConnection {
     });
     this.mqttClient.on("error", (error) => {
       console.log("MQTT Connection Error: " + error.message);
-    })
+    });
   }
 }
 

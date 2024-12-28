@@ -1,6 +1,6 @@
 import express from "express"
 
-import asyncMiddlewareHandler from "../../services/middleware.service.js"
+import asyncMiddlewareHandler from "../../services/middleware/middleware.service.js"
 import { AuthenticationHeader } from "../../services/middleware/header.service.js"
 
 import userAuthRouter from "./auth.routes.js"

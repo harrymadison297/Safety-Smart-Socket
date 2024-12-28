@@ -1,5 +1,5 @@
 import express from "express"
-import asyncMiddlewareHandler from "../../services/middleware.service.js"
+import asyncMiddlewareHandler from "../../services/middleware/middleware.service.js"
 import manufactorController from "../../controllers/manufactor.controller.js"
 
 const manufactorDeviceRouter = express.Router()
