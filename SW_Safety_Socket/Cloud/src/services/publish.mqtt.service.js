@@ -20,7 +20,7 @@ class MQTTPublishService {
             alltimer.forEach(async (e) => {
                 if (e.preset || e.timeset < current) {
                     instanceMqtt.mqttClient.publish(
-                        "/mac/"+e.mac,
+                        e.mac,
                         JSON.stringify(
                             {
                                 cmd: 4,

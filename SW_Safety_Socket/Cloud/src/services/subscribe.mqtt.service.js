@@ -1,6 +1,8 @@
 import HistoryModel from "../database/schema/history.model.js"
 import DeviceModel from "../database/schema/device.model.js";
 import TimerModel from "../database/schema/timer.rule.model.js";
+import MeshModel from "../database/schema/mesh.model.js";
+import instanceMqtt from "../mqtt/init.mqtt.js";
 
 class MQTTSubscribeService {
     mac = async (topic, message) => {
@@ -44,7 +46,20 @@ class MQTTSubscribeService {
     }
 
     joinrequest = async (message) => {
-        console.log(message)
+        const data = JSON.parse(message);
+        const device = await DeviceModel.findOne({ mac: data.mac }).lean({});
+        const mesh = await MeshModel.findById(device.meshNetwork).lean({});
+
+        instanceMqtt.mqttClient.publish(
+            device.mac,
+            JSON.stringify(
+                {
+                    "cmd": 1,
+                    "mesh_id": mesh.meshid,
+                    "softap_pw": mesh.meshpass
+                }
+            )
+        )
     }
 }
 
