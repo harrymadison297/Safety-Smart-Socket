@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:safety_socket/bloc/auth/auth_bloc.dart';
 import 'package:safety_socket/config/router.dart';
 import 'package:safety_socket/config/theme.dart';
+import 'package:safety_socket/datas/models/user_model.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+      ChangeNotifierProvider(
+          create: (context) => UserModel(),
+          child: const MyApp(),
+      )
+  );
 }
 
 class MyApp extends StatelessWidget {

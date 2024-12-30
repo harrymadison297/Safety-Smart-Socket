@@ -6,7 +6,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:safety_socket/bloc/auth/auth_bloc.dart';
+import 'package:safety_socket/datas/models/user_model.dart';
 
 import '../../config/router.dart';
 
@@ -24,7 +26,7 @@ class LoginScreen extends StatelessWidget {
       );
     }
 
-    return Scaffold(
+    return Consumer(builder: (context, value, child) => Scaffold(
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
           child: BlocBuilder<AuthBloc, AuthState>(
@@ -247,13 +249,15 @@ class LoginScreen extends StatelessWidget {
                   listener: (context, state) {
                     switch (state) {
                       case AuthLoginSuccess():
+                        context.read<UserModel>().updateUserModel(state.id, state.email, state.name, state.token);
                         context.go(RouteName.home);
                         break;
                       case AuthLoginFailure():
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text('Wrong email or password!'),
-                            action: SnackBarAction(label: 'I do', onPressed: ScaffoldMessenger.of(context).hideCurrentSnackBar),
+                            action: SnackBarAction(label: 'Hide', onPressed: ScaffoldMessenger.of(context).hideCurrentSnackBar),
+                            backgroundColor: Colors.red
                           ),
                         );
                       default:
@@ -270,6 +274,7 @@ class LoginScreen extends StatelessWidget {
             },
           )
         )
+    )
     );
   }
 }

@@ -1,1 +1,1 @@
-const config_server = "http://localhost:3000";
+const config_server = "http://10.0.2.2:3000";
