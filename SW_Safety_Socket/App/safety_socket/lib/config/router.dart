@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
-import '../screens/home/home_screen.dart';
+import '../screens/home/main_screen.dart';
 
 class RouteName {
   static const String home = '/';
@@ -32,7 +32,7 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: RouteName.home,
-      builder: (context, state) => HomeScreen(),
+      builder: (context, state) => MainScreen(),
     ),
     GoRoute(
       path: RouteName.login,
