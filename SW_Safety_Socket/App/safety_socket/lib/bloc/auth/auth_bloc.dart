@@ -1,0 +1,35 @@
+import 'package:bloc/bloc.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import 'auth_bloc.dart';
+
+part 'auth_event.dart';
+part 'auth_state.dart';
+
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  AuthBloc() : super(AuthInitial()) {
+    on<AuthStarted>(_onStarted);
+    on<AuthLoginStarted>(_onLoginStarted);
+    on<AuthRegisterStarted>(_onRegisterStarted);
+    on<AuthLogoutStarted>(_onLogout);
+  }
+
+  void _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
+    emit(AuthInitial());
+  }
+
+  void _onLoginStarted(AuthLoginStarted event, Emitter<AuthState> emit) async {
+    emit(AuthLoginInProgress());
+    await Future.delayed(1.seconds);
+  }
+
+  void _onRegisterStarted(
+      AuthRegisterStarted event, Emitter<AuthState> emit) async {
+    emit(AuthRegisterInProgress());
+    emit(AuthRegisterSuccess());
+  }
+
+  void _onLogout(AuthLogoutStarted event, Emitter<AuthState> emit) async {
+    emit(AuthInitial());
+  }
+}
