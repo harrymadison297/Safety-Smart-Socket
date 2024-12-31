@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:safety_socket/datas/api/login_api.dart';
+import 'package:safety_socket/datas/api/auth_api.dart';
 import 'dart:convert';
 
 import 'package:safety_socket/datas/models/user_model.dart';
