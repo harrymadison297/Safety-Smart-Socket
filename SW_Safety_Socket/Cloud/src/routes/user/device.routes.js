@@ -6,6 +6,7 @@ const userDeviceRouter = express.Router()
 
 userDeviceRouter
     .get('/all', asyncMiddlewareHandler(UserDeviceController.all))                                      // Get all devices
+    .get('/id/:id', asyncMiddlewareHandler(UserDeviceController.one))                                   // Get device by id
     .post('/findbymac', asyncMiddlewareHandler(UserDeviceController.findbymac))                         // Find device by mac
     .post('/claim', asyncMiddlewareHandler(UserDeviceController.claimDevice))                           // Claim new device
     .post('/setmesh', asyncMiddlewareHandler(UserDeviceController.setmesh))                             // Claim new device

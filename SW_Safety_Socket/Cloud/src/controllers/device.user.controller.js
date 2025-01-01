@@ -7,6 +7,12 @@ class UserDeviceController {
         return res.status(200).json(await deviceUserService.all(req))
     }
 
+    /* Show one device */
+    all = async (req, res, next) => {
+        console.log("[GET] :: one devices ::", req.body)
+        return res.status(200).json(await deviceUserService.one(req))
+    }
+
     /* Find a device by MAC */
     findbymac = async (req, res, next) => {
         console.log("[POST] :: find device by mac ::", req.body)

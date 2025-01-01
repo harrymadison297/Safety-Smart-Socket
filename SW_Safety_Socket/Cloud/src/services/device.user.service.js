@@ -16,6 +16,17 @@ class DeviceUserService {
     }
   };
 
+  one = async (req) => {
+    try {
+      const userID = await req.get("CLIENT_ID");
+      const { deviceID } = await req.params;
+      const deviceInfo = await DeviceModel.findById(deviceID);
+      return deviceInfo
+    } catch (error) {
+      throw new ErrorResponse("Couldn't find this data from server", 500);
+    }
+  };
+
   findbymac = async ({ mac }) => {
     try {
       const findedDevice = await DeviceModel.findOne({ mac: mac }).lean({});
