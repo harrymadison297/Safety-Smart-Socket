@@ -5,7 +5,7 @@
 
 #include "FW_Safety_Socket.h"
 
-#define DEV_MODE 0
+#define DEV_MODE 1
 #define TEST_ADE9153 0
 
 /**************************************************************
@@ -15,10 +15,12 @@
 static RMSRegs_t RMSRegs;
 static PowRegs_t PowRegs;
 static PQRegs_t PQRegs;
-static ACALRegs_t ACALRegs;
+//static ACALRegs_t ACALRegs;
 static device_data_t devData;
 /* Semaphore for BLE and Wifi Config */
 static SemaphoreHandle_t sem;
+/* ON/OFF Control state */
+static bool control_state = false;
 
 /**************************************************************
  *						TOOLS FUNCTIONS
@@ -29,10 +31,32 @@ void esp_output_create(int pin)
 		1LL << pin,
 		GPIO_MODE_OUTPUT,
 		GPIO_PULLUP_DISABLE,
-		GPIO_PULLDOWN_DISABLE,
+		GPIO_PULLDOWN_ENABLE,
 		GPIO_INTR_DISABLE};
 	gpio_config(&pin_config);
 	gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+}
+
+void esp_input_handler(void *arg)
+{
+    control_state = !control_state;
+    printf("%d", control_state);
+    gpio_set_level(CTRL_ISO_PIN_OUT, control_state);
+    gpio_set_level(STATE_LED_PIN_OUT, control_state);
+}
+
+void esp_input_create()
+{
+    gpio_config_t pin_config = {
+		1LL << CONTROL_BUTTON_PIN,
+		GPIO_MODE_INPUT,
+		GPIO_PULLUP_DISABLE,
+		GPIO_PULLDOWN_DISABLE,
+		GPIO_INTR_ANYEDGE
+    };
+    gpio_config(&pin_config);
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(CONTROL_BUTTON_PIN, esp_input_handler, NULL);
 }
 
 void mqtt_recv_data_cb(char *topic, char *data)
@@ -133,6 +157,10 @@ void app_main(void)
 
 	sem = xSemaphoreCreateBinary();
 
+    esp_output_create(CTRL_ISO_PIN_OUT);
+    esp_output_create(STATE_LED_PIN_OUT);
+    // esp_input_create();
+
     if (value == WIFI_MESH_NOT_INIT)
     {
         BLE_SERVER_INIT();
@@ -147,15 +175,15 @@ void app_main(void)
         char mesh_id[30];
         char softap_pw[30];
         uint8_t mesh_id_u8[6];
-        router_and_client_id_infor_t info = {};
+        //router_and_client_id_infor_t info = {};
         register_mqtt_recv_callback(mqtt_recv_data_cb);
         get_router_and_clientid_infor(&infor);
         get_mesh_credentials(mesh_id, softap_pw);
         hex_string_to_u8_array(mesh_id, mesh_id_u8);
         esp_wifi_mesh_init(infor.router_ssid, infor.router_password, softap_pw, mesh_id_u8);
         mqtt_app_start(MQTT_BROKER);
-        xTaskCreate((TaskFunction_t)send_ui_to_cloud_task, "send_ui_to_cloud_task", 8192, (void *)infor.client_id, 1, (TaskHandle_t *)ui_task_handle);
-		xTaskCreate((TaskFunction_t)ade9153a_mesurement_task, "ade9153a_mesurement_task", 8192, NULL, 1, NULL);
+        xTaskCreate((TaskFunction_t)send_ui_to_cloud_task, "send_data", 8192, (void *)infor.client_id, 1, (TaskHandle_t *)ui_task_handle);
+		xTaskCreate((TaskFunction_t)ade9153a_mesurement_task, "ade9153a", 8192, NULL, 1, NULL);
     }
 }
 
@@ -206,6 +234,8 @@ void ade9153a_mesurement_task(void *parameter)
 	RMSRegs.targetAVCC = calculate_target_avcc(RBIG, RSMALL, &vHeadRoom);
 	PowRegs.targetPowCC = calculate_target_powCC(RMSRegs.targetAICC, RMSRegs.targetAVCC);
 
+    ADE9153_initCFG();
+
 	while (true)
 	{
 		ADE9153_read_RMSRegs(&RMSRegs);
@@ -255,7 +285,7 @@ void request_join_wifi_mesh_task(void *param)
 {
     char mac[6] = {0x00};
     char mac_str[15] = {0x00};
-    char clientid[60];
+    char clientid[30];
     char data[100];
     get_mac_address(mac);
     mac_to_string(mac, mac_str);
