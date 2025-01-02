@@ -255,7 +255,7 @@ class LoginScreen extends StatelessWidget {
                       case AuthLoginFailure():
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Wrong email or password!'),
+                            content: Text(state.message),
                             action: SnackBarAction(label: 'Hide', onPressed: ScaffoldMessenger.of(context).hideCurrentSnackBar),
                             backgroundColor: Colors.red
                           ),

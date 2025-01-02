@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:iconly/iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:safety_socket/bloc/auth/auth_bloc.dart';
@@ -21,9 +22,9 @@ class SettingTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "Settings",
-                style: TextStyle(
+                style: GoogleFonts.varelaRound(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                 ),

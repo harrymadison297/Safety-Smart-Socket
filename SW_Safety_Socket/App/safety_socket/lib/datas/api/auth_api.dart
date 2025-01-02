@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:safety_socket/config.dart';
 import 'package:http/http.dart' as http;
 
@@ -7,14 +9,11 @@ class AuthData {
     try {
       final response = await http.post(
           Uri.parse(url),
-        body: {
-            "email": email,
-          "password": password
-        }
+        body: {"email": email, "password": password}
       );
       return response;
     } catch (e) {
-      return http.Response({"message": "Fail to connect"} as String, 500);
+      return http.Response(jsonEncode({"message": "Fail to connect"}), 500);
     }
   }
 }

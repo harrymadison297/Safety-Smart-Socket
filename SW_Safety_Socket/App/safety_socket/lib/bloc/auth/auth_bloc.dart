@@ -24,9 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void _onLoginStarted(AuthLoginStarted event, Emitter<AuthState> emit) async {
     emit(AuthLoginInProgress());
-    await Future.delayed(1.seconds);
     final authResponse = await AuthData().authLogin(event.email, event.password);
-    final parse = jsonDecode(authResponse.body);
+    final parse = await jsonDecode(authResponse.body);
     if (authResponse.statusCode == 200)
       {
         emit(AuthLoginSuccess(parse['id'], parse['token'], parse['name'], parse['email']));
