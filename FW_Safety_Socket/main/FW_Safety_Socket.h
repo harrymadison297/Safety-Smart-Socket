@@ -10,7 +10,11 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
-#include "driver/gpio.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
 
 #include "my_mqtt.h"
 #include "my_mesh.h"
@@ -19,51 +23,54 @@
 #include "my_mqtt.h"
 #include "my_wifi.h"
 #include "my_ade9153.h"
+#include "my_io.h"
 
 /**
  * ESP32 Log Config
  */
-#define TAG 				"MAIN"
+#define TAG "MAIN"
 
 /**
  * BLE Config
  */
-#define BLE_PASSWORD 		"123456"
+#define BLE_PASSWORD "123456"
 
 /**
  * MQTT Config
  */
-#define MQTT_BROKER 		"mqtt://white-dev.aithings.vn:1883"
-#define JOIN_REQ_FREQ 		10000
+#define MQTT_BROKER "mqtt://white-dev.aithings.vn:1883"
+#define JOIN_REQ_FREQ 10000
 
 /**
  * GPIO Define
  */
-#define CTRL_ISO_PIN_OUT 	26
-#define STATE_LED_PIN_OUT 	14
-#define CONTROL_BUTTON_PIN	27
+#define CTRL_ISO_PIN_OUT 26
+#define STATE_LED_PIN_OUT 14
+#define CONTROL_BUTTON_PIN 0 // 27
 
 /**
  * ADE9153A Configuration
  */
-#define ADE9153_PIN_RESET 	22
-#define RSHUNT 				0.002 	/* Ohm */
-#define PGAGAIN 			16
-#define RBIG 				1000000 /* Ohm */
-#define RSMALL 				1000	/* Ohm */
+#define ADE9153_PIN_RESET 22
+#define RSHUNT 0.002 /* Ohm */
+#define PGAGAIN 16
+#define RBIG 1000000 /* Ohm */
+#define RSMALL 1000	 /* Ohm */
 
-#define xSPI_HOST 			VSPI_HOST
-#define xSPI_CS 			-1
-#define xSPI_CLK 			(1 * 1000 * 1000)
+#define xSPI_HOST VSPI_HOST
+#define xSPI_CS -1
+#define xSPI_CLK (1 * 1000 * 1000)
 
-#define xSPI_INIT_DELAY 	100 	/* ms */
-#define MESURE_PERIOD 		500 	/* ms */
+#define xSPI_INIT_DELAY 100 /* ms */
+#define MESURE_PERIOD 500	/* ms */
+
+#define HOLD_RESET_BUTTON_TIME_THRESHOLD 1000
 
 /* Typedef Wifi Mesh Initial State */
 typedef enum
 {
-    WIFI_MESH_NOT_INIT = false,
-    WIFI_MESH_OK = true,
+	WIFI_MESH_NOT_INIT = false,
+	WIFI_MESH_OK = true,
 } wifi_mesh_init_e;
 
 /* Typedef ADE9153A Data Interface */
