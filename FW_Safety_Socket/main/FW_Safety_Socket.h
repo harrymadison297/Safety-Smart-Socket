@@ -46,7 +46,7 @@
  */
 #define CTRL_ISO_PIN_OUT 26
 #define STATE_LED_PIN_OUT 14
-#define CONTROL_BUTTON_PIN 0 // 27
+#define CONTROL_BUTTON_PIN 27
 
 /**
  * ADE9153A Configuration
