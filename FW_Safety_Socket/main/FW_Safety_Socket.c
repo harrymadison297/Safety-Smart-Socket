@@ -158,8 +158,14 @@ void app_main(void)
     sem = xSemaphoreCreateBinary();
     delete_flash_semaphore = xSemaphoreCreateBinary();
 
+    /* Init Pin for control and led signal*/
     esp_output_create(CTRL_ISO_PIN_OUT);
     esp_output_create(STATE_LED_PIN_OUT);
+
+    /* Init Pin for startup ADE9153 */
+    esp_output_create(ADE9153_PIN_RESET);
+    esp_output_create(PIN_VSPI_CS);
+    esp_output_create(PIN_VSPI_CLK);
 
     // end test input
     // esp_input_create(CONTROL_BUTTON_PIN);
@@ -203,11 +209,6 @@ void ade9153a_mesurement_task(void *parameter)
 {
     float vHeadRoom;
     bool checkSPI = false;
-
-    /* Init Pin for startup ADE9153 */
-    esp_output_create(ADE9153_PIN_RESET);
-    esp_output_create(PIN_VSPI_CS);
-    esp_output_create(PIN_VSPI_CLK);
 
     /* Choose ADE9153 SPI Communication */
     gpio_set_level(ADE9153_PIN_RESET, 1);
