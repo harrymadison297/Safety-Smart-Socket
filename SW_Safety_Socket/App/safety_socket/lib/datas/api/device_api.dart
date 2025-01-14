@@ -51,4 +51,62 @@ class DeviceData {
       return http.Response(jsonEncode({"message": "Fail to connect"}), 500);
     }
   }
+
+  Future<http.Response> deviceClaim (String mac) async {
+    const url = "$config_server/device/claim";
+    Map<String, String> requestHeaders = getHeader();
+
+    try {
+      final response = await http.post(
+          Uri.parse(url),
+          headers: requestHeaders,
+          body: {
+            "mac": mac
+          }
+      );
+      return response;
+    } catch (e) {
+      return http.Response(jsonEncode({"message": "Fail to connect"}), 500);
+    }
+  }
+
+  Future<http.Response> deviceSetMesh (String mac) async {
+    const url = "$config_server/device/setmesh";
+    Map<String, String> requestHeaders = getHeader();
+
+    try {
+      final response = await http.post(
+          Uri.parse(url),
+          headers: requestHeaders,
+          body: {
+            "name": "mesh1",
+            "mac": mac,
+            "meshid": userModelData['_id'].toString()
+          }
+      );
+      return response;
+    } catch (e) {
+      return http.Response(jsonEncode({"message": "Fail to connect"}), 500);
+    }
+  }
+
+  Future<http.Response> deviceControl (String mac, bool state) async {
+    const url = "$config_server/device/setstate";
+    Map<String, String> requestHeaders = getHeader();
+
+    try {
+      final response = await http.post(
+          Uri.parse(url),
+          headers: requestHeaders,
+        body: {
+            "mac": mac,
+          "state": state ? "1" : "0"
+        }
+      );
+      return response;
+    } catch (e) {
+      print(e);
+      return http.Response(jsonEncode({"message": "Fail to connect"}), 500);
+    }
+  }
 }

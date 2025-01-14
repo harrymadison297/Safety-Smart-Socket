@@ -36,6 +36,12 @@ class UserDeviceController {
         console.log("[GET] :: Show device history ::", req.body)
         return res.status(200).json(await deviceUserService.history(req))
     }
+
+    /* Set device state */
+    setstate = async (req, res, next) => {
+        console.log("[POST] :: Set device state ::", req.body)
+        return res.status(200).json(await deviceUserService.setstate(req))
+    }
 }
 
 export default new UserDeviceController

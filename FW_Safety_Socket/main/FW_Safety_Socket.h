@@ -64,7 +64,7 @@
 #define xSPI_INIT_DELAY 100 /* ms */
 #define MESURE_PERIOD 500	/* ms */
 
-#define HOLD_RESET_BUTTON_TIME_THRESHOLD 1000
+#define HOLD_RESET_BUTTON_TIME_THRESHOLD 10000
 
 /* Typedef Wifi Mesh Initial State */
 typedef enum

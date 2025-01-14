@@ -1,8 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconly/iconly.dart';
 import 'package:provider/provider.dart';
+import 'package:safety_socket/config/router.dart';
+import 'package:safety_socket/screens/add/add_screen.dart';
 
 import '../../datas/api/device_api.dart';
 import '../../datas/models/device_model.dart';
@@ -85,14 +89,23 @@ class _HomeTabState extends State<HomeTab> {
         // smart devices grid
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Text(
-            "Smart Devices",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              color: Colors.grey.shade800,
-            ),
-          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Smart Devices",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              IconButton(
+                  onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => const AddScreen())); },
+                  icon: const Icon(IconlyLight.plus, size: 28,),
+              )
+            ],
+          )
         ),
         const SizedBox(height: 10),
 

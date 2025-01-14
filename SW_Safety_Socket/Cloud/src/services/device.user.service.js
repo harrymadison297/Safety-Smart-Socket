@@ -3,6 +3,7 @@ import HistoryModel from "../database/schema/history.model.js";
 import MeshModel from "../database/schema/mesh.model.js";
 import UserModel from "../database/schema/user.model.js";
 import ErrorResponse from "../helpers/error.response.js";
+import instanceMqtt from "../mqtt/init.mqtt.js";
 
 class DeviceUserService {
 
@@ -90,7 +91,7 @@ class DeviceUserService {
           user: await req.get("CLIENT_ID"),
           meshid: meshid,
           name: name,
-          meshpass: Math.floor((Math.random() * 900000) + 100000)
+          meshpass: "meshpass"
         })
       }
 
@@ -146,6 +147,37 @@ class DeviceUserService {
     );
     return history
   }
+
+  setstate = async (req) => {
+    try {
+      const { mac, state } = req.body;
+      const userid = await req.get("CLIENT_ID");
+
+      const device = await DeviceModel.findOne({ mac: mac }).lean({});
+      if (!device || device.ownUser != userid) {
+        throw new ErrorResponse("This not your device!", 400);
+      }
+
+      instanceMqtt.mqttClient.publish(
+          mac,
+          JSON.stringify(
+            {
+                "cmd": 4,
+                "control": state == '1' ? 1 : 0
+            }
+          )
+      )
+
+      console.log(JSON.stringify(
+        {
+            "cmd": 4,
+            "control": state == '1' ? 1 : 0
+        }
+      ))
+    } catch (error) {
+      throw new ErrorResponse("Couldn't set state", 500);
+    }
+  };
 }
 
 export default new DeviceUserService();

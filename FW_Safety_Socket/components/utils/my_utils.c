@@ -455,7 +455,7 @@ void hex_string_to_u8_array(char *hex_str, uint8_t *u8_array)
     }
 }
 
-void create_voltage_current_json(const char *client_id, const char *mac_str, float voltage, float current, char *json_buffer, size_t buffer_size)
+void create_voltage_current_json(const char *mac_str, float voltage, float current, bool state, char *json_buffer, size_t buffer_size)
 {
     // Tạo đối tượng JSON gốc
     cJSON *root = cJSON_CreateObject();
@@ -465,11 +465,11 @@ void create_voltage_current_json(const char *client_id, const char *mac_str, flo
         return;
     }
 
-    // Thêm Client ID
-    cJSON_AddStringToObject(root, "client_id", client_id);
-
     // Thêm MAC Address
     cJSON_AddStringToObject(root, "mac", mac_str);
+
+    // Thêm State
+    cJSON_AddBoolToObject(root, "state", state);
 
     // Thêm điện áp
     cJSON_AddNumberToObject(root, "voltage", voltage);

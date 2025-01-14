@@ -11,5 +11,6 @@ userDeviceRouter
     .post('/claim', asyncMiddlewareHandler(UserDeviceController.claimDevice))                           // Claim new device
     .post('/setmesh', asyncMiddlewareHandler(UserDeviceController.setmesh))                             // Claim new device
     .get('/history/:mac/limit/:limit', asyncMiddlewareHandler(UserDeviceController.history))            // Get device history
+    .post('/setstate', asyncMiddlewareHandler(UserDeviceController.setstate))                           // Set device state
 
 export default userDeviceRouter

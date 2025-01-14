@@ -11,11 +11,13 @@
 static RMSRegs_t RMSRegs;
 static PowRegs_t PowRegs;
 static PQRegs_t PQRegs;
-// static ACALRegs_t ACALRegs;
+static ACALRegs_t ACALRegs;
 static device_data_t devData;
 /* Semaphore for BLE and Wifi Config */
 static SemaphoreHandle_t sem;
 static SemaphoreHandle_t delete_flash_semaphore;
+/* Control state */
+static bool control_state = false;
 
 /**************************************************************
  *						TOOLS FUNCTIONS
@@ -35,7 +37,6 @@ void mqtt_recv_data_cb(char *topic, char *data)
     switch (cmd)
     {
     case JOIN_NETWORK_ACCEPT:
-
         const char *mesh_id = cJSON_GetObjectItem(json, "mesh_id")->valuestring;
         const char *softap_pw = cJSON_GetObjectItem(json, "softap_pw")->valuestring;
         ESP_LOGI(TAG, "Accept join mesh id : %s and softap password %s", mesh_id, softap_pw);
@@ -48,6 +49,18 @@ void mqtt_recv_data_cb(char *topic, char *data)
     case RESET_CHIP:
         nvs_flash_erase();
         esp_restart();
+        break;
+    case DIRECT_CONTROL:
+        const int state_rev = cJSON_GetObjectItem(json, "control")->valueint;
+        if (state_rev)
+        {
+            control_state = true;
+        } else
+        {
+            control_state = false;
+        }
+        gpio_set_level(CTRL_ISO_PIN_OUT, control_state);
+        gpio_set_level(STATE_LED_PIN_OUT, control_state);
         break;
 
     default:
@@ -96,8 +109,9 @@ void ble_recv_callback(char *data)
     }
 }
 
-void button_cb(bool control_state, uint64_t tick)
+void button_cb(uint64_t tick)
 {
+    control_state = !control_state;
     int press = 0;
     press = tick * portTICK_PERIOD_MS;
     if (press == 0)
@@ -111,6 +125,15 @@ void button_cb(bool control_state, uint64_t tick)
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(delete_flash_semaphore, &xHigherPriorityTaskWoken);
     }
+}
+
+void init_ble_message()
+{
+    char mac[6] = {0x00};
+    char mac_str[15] = {0x00};
+    get_mac_address(mac);
+    mac_to_string(mac, mac_str);
+    send_message_to_phone(mac_str, 15);
 }
 /**************************************************************
  *						MAIN FUNCTION
@@ -139,12 +162,13 @@ void app_main(void)
     esp_output_create(STATE_LED_PIN_OUT);
 
     // end test input
-    esp_input_create(CONTROL_BUTTON_PIN);
+    // esp_input_create(CONTROL_BUTTON_PIN);
     button_callback_register(button_cb);
 
     if (value == WIFI_MESH_NOT_INIT)
     {
         BLE_SERVER_INIT();
+        // init_ble_message();
         ble_callback_register_callback(ble_recv_callback);
         register_wifi_status_callback(wifi_connect_status_cb);
         register_mqtt_recv_callback(mqtt_recv_data_cb);
@@ -287,10 +311,8 @@ void request_join_wifi_mesh_task(void *param)
 void send_ui_to_cloud_task(void *parameter)
 {
     char data[200];
-    const char *client_id = (const char *)parameter;
     char mac[6] = {0x00};
     char mac_str[13] = {0x00};
-    ESP_LOGI("TASK", "Client ID in task: %s", client_id);
     get_mac_address(mac);
     mac_to_string(mac, mac_str);
     char mqtt_topic[18];
@@ -300,7 +322,7 @@ void send_ui_to_cloud_task(void *parameter)
     while (1)
     {
         i++;
-        create_voltage_current_json(client_id, mac_str, devData.RMSValues.AVValue, devData.RMSValues.AIValue, data, sizeof(data));
+        create_voltage_current_json(mac_str, devData.RMSValues.AVValue, devData.RMSValues.AIValue, control_state, data, sizeof(data));
         mqtt_app_publish(mqtt_topic, data, 1);
         delay_ms(MESURE_PERIOD);
     }

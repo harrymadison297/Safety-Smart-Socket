@@ -36,6 +36,12 @@ class _DeviceCardState extends State<DeviceCard> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _timer.cancel();
+  }
+
   void thisDeviceState () async {
     try {
       final data = await DeviceData().deviceState(widget.device.mac);
@@ -46,7 +52,10 @@ class _DeviceCardState extends State<DeviceCard> {
         DateTime lastUpdated = DateTime.parse(history.createdAt);
         DateTime nowTime = DateTime.now();
         alive = (nowTime.millisecondsSinceEpoch - lastUpdated.millisecondsSinceEpoch) < 5*60*1000;
-        currentState = history.value.state!;
+        currentState = false;
+        if (history.value.state != null) {
+          currentState = dataJson[0]["value"]["state"];
+        }
       } catch (e)
       {
         print(e);
@@ -57,16 +66,11 @@ class _DeviceCardState extends State<DeviceCard> {
     }
   }
 
-  void sendControlData () {
+  Future sendControlData () async {
+    await DeviceData().deviceControl(widget.device.mac, !currentState);
     updatingData = true;
     currentState = !currentState;
     setState(() {});
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _timer.cancel();
   }
 
   @override
@@ -89,7 +93,7 @@ class _DeviceCardState extends State<DeviceCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
+                    SizedBox(
                       width: 25,
                       height: 25,
                       child: updatingData ? Transform.scale(
@@ -146,14 +150,14 @@ class _DeviceCardState extends State<DeviceCard> {
                     ),
                   ),
                   Text(
-                      "U: " + (history.value.voltage != 0 ? history.value.voltage.toString() : ""),
+                      "U: ${history.value.voltage}",
                     style: GoogleFonts.varelaRound(
                       fontSize: 10,
                       color: Colors.black,
                     ),
                   ),
                   Text(
-                    "I: " + (history.value.current != 0 ? history.value.current.toString() : ""),
+                    "I: ${history.value.current}",
                     style: GoogleFonts.varelaRound(
                       fontSize: 10,
                       color: Colors.black,

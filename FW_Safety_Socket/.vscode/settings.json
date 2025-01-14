@@ -3,7 +3,11 @@
         "my_ade9153.h": "c",
         "ade9153a.h": "c",
         "*.inc": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "iosfwd": "c",
+        "xlocbuf": "c",
+        "cstddef": "cpp",
+        "type_traits": "cpp"
     },
     "idf.portWin": "COM3",
     "idf.flashType": "UART"

@@ -46,20 +46,25 @@ class MQTTSubscribeService {
     }
 
     joinrequest = async (message) => {
-        const data = JSON.parse(message);
-        const device = await DeviceModel.findOne({ mac: data.mac }).lean({});
-        const mesh = await MeshModel.findById(device.meshNetwork).lean({});
-
-        instanceMqtt.mqttClient.publish(
-            device.mac,
-            JSON.stringify(
-                {
-                    "cmd": 1,
-                    "mesh_id": mesh.meshid,
-                    "softap_pw": mesh.meshpass
-                }
+        try {
+            const data = await JSON.parse(message);
+            const device = await DeviceModel.findOne({ mac: data.mac }).lean({});
+            console.log(device)
+            const mesh = await MeshModel.findById(device.meshNetwork._id).lean({});
+    
+            instanceMqtt.mqttClient.publish(
+                device.mac,
+                JSON.stringify(
+                    {
+                        "cmd": 1,
+                        "mesh_id": mesh.meshid,
+                        "softap_pw": mesh.meshpass
+                    }
+                )
             )
-        )
+        } catch (e) {
+            console.log(e);
+        }
     }
 }
 

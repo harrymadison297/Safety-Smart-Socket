@@ -450,6 +450,83 @@
                 ]
             }
         },
+        "/device/setstate": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:3000",
+                        "description": "User application port"
+                    }
+                ],
+                "summary": "Set device state",
+                "description": "",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            },
+                            "example": {
+                                "mac": "abcd1234",
+                                "state": 1
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "device": "deviceUpdate._id"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Wrong mesh info",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Wrong mesh info"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't set mesh",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "message": "Couldn't set mesh"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "ACCESS_TOKEN": []
+                    },
+                    {
+                        "CLIENT_ID": []
+                    }
+                ]
+            }
+        },
         "/timer/all": {
             "get": {
                 "tags": [

@@ -2,7 +2,6 @@
 #include "my_io.h"
 button_callback_t button_callback = NULL;
 /* ON/OFF Control state */
-static bool control_state = false;
 static uint64_t start, end;
 static uint64_t tick;
 void esp_output_create(int pin)
@@ -21,18 +20,17 @@ void esp_output_create(int pin)
 void esp_input_handler(void *arg)
 {
     int gpio_num = (uint32_t)arg;
-    if (gpio_get_level(gpio_num) == 0)
-    {
-        control_state = !control_state;
-        button_callback(control_state, 0);
+    // if (gpio_get_level(gpio_num) == 0)
+    // {
+        button_callback(0);
         start = xTaskGetTickCountFromISR();
-    }
-    else
-    {
-        end = xTaskGetTickCountFromISR();
-        tick = end - start;
-        button_callback(false, tick);
-    }
+    // }
+    // else
+    // {
+        // end = xTaskGetTickCountFromISR();
+        // tick = end - start;
+        // button_callback(false, tick);
+    // }
 }
 
 void esp_input_create(int pin_num)
@@ -40,7 +38,7 @@ void esp_input_create(int pin_num)
     gpio_config_t pin_config = {
         1LL << pin_num,
         GPIO_MODE_INPUT,
-        GPIO_PULLUP_DISABLE,
+        GPIO_PULLUP_ONLY,
         GPIO_PULLDOWN_DISABLE,
         GPIO_INTR_ANYEDGE};
     gpio_config(&pin_config);

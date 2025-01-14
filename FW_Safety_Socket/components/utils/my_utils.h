@@ -25,6 +25,7 @@ typedef enum
     JOIN_NETWORK_ACCEPT = 0x01,
     RESET_SOFTAP_PASSWORD = 0x02,
     RESET_CHIP = 0x03,
+    DIRECT_CONTROL = 0x04,
 } cmd_e;
 
 void get_mac_address(char *mac);
@@ -41,6 +42,6 @@ bool read_flag_from_flash();
 esp_err_t get_router_and_clientid_infor(router_and_client_id_infor_t *info);
 esp_err_t get_mesh_credentials(char *mesh_id, char *softap_pw);
 void hex_string_to_u8_array(char *hex_str, uint8_t *u8_array);
-void create_voltage_current_json(const char *client_id, const char *mac_str, float voltage, float current, char *json_buffer, size_t buffer_size);
+void create_voltage_current_json(const char *mac_str, float voltage, float current, bool state, char *json_buffer, size_t buffer_size);
 
 #endif
