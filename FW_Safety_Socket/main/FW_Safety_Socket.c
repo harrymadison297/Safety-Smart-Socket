@@ -16,6 +16,8 @@ static device_data_t devData;
 /* Semaphore for BLE and Wifi Config */
 static SemaphoreHandle_t sem;
 static SemaphoreHandle_t delete_flash_semaphore;
+/* Semaphore for calib ADE */
+static SemaphoreHandle_t ade_calib_semaphore;
 /* Control state */
 static bool control_state = false;
 
@@ -157,6 +159,7 @@ void app_main(void)
 
     sem = xSemaphoreCreateBinary();
     delete_flash_semaphore = xSemaphoreCreateBinary();
+    ade_calib_semaphore = xSemaphoreCreateBinary();
 
     esp_output_create(CTRL_ISO_PIN_OUT);
     esp_output_create(STATE_LED_PIN_OUT);
@@ -188,7 +191,8 @@ void app_main(void)
         esp_wifi_mesh_init(infor.router_ssid, infor.router_password, softap_pw, mesh_id_u8);
         mqtt_app_start(MQTT_BROKER);
         xTaskCreate((TaskFunction_t)send_ui_to_cloud_task, "send_data", 8192, (void *)infor.client_id, 1, (TaskHandle_t *)ui_task_handle);
-        xTaskCreate((TaskFunction_t)ade9153a_mesurement_task, "ade9153a", 8192, NULL, 1, NULL);
+        // xTaskCreate((TaskFunction_t)ade9153a_calib_task, "calib", 8192, NULL, 3, (TaskHandle_t *)calib_task_handle);
+        xTaskCreate((TaskFunction_t)ade9153a_mesurement_task, "ade9153a", 8192, NULL, 1, (TaskHandle_t *)mesure_task_handle);
     }
 
     xSemaphoreTake(delete_flash_semaphore, portMAX_DELAY);
@@ -199,10 +203,109 @@ void app_main(void)
 /**************************************************************
  *						FREERTOS TASK
  **************************************************************/
+void ade9153a_calib_task(void *pParameter) {
+	bool checkADE = false;
+	bool checkSPI = false;
+	bool computed = false;
+	uint8_t retryTimes = 0;
+	int8_t acalStage = 0;
+	float vHeadRoom;
+
+    while (true)
+    {
+        /* Choose ADE9153 SPI Communication */
+        gpio_set_level(PIN_VSPI_CS, 0);
+        gpio_set_level(PIN_VSPI_CLK, 1);
+        /* Reset ADE9153 */
+        gpio_set_level(PIN_VSPI_CLK, 1);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        gpio_set_level(ADE9153_PIN_RESET, 0);
+
+        /* Initiation SPI to ADE9153 */
+        do
+        {
+            checkSPI = init_spiADE9153(xSPI_HOST, xSPI_CS, xSPI_CLK);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        } while (!checkSPI);
+
+         /* compute targetXCC */
+        RMSRegs.targetAICC = calculate_target_aicc(RSHUNT, PGAGAIN);
+        RMSRegs.targetAVCC = calculate_target_avcc(RBIG, RSMALL, &vHeadRoom);
+        PowRegs.targetPowCC = calculate_target_powCC(RMSRegs.targetAICC, RMSRegs.targetAVCC);
+
+        /* Init & config ADE9153 */
+        ADE9153_initCFG();
+
+        /* Autocalibration ADE9153 */
+        /* Calib current */
+        retryTimes = 10; // 300ms/times
+        printf("Autocalibration AI \n");
+        checkADE = ADE9153_acal_AINormal();
+        while (retryTimes && !checkADE) {
+            checkADE = ADE9153_acal_AINormal();
+            if (!checkADE) {
+                retryTimes--;
+                vTaskDelay(300 / portTICK_PERIOD_MS);
+                printf("AutoCalb_AI: nADE_acal %d\n", retryTimes);
+            } else {
+                printf("checkADE_ok AI\n");
+            }
+        }
+        if (!checkADE) {
+            printf("checkADE_false AI\n");
+        } else {
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            printf("Autocalibration stop AI\n");
+            ADE9153_acal_stop();
+            acalStage++;
+        }
+
+        /* Calib voltage */
+        retryTimes = 10; // 300ms/times
+        printf("Autocalibration AV\n");
+        checkADE = ADE9153_acal_AV();
+        while (retryTimes && !checkADE) {
+            checkADE = ADE9153_acal_AV();
+            if (!checkADE) {
+                retryTimes--;
+                vTaskDelay(300 / portTICK_PERIOD_MS);
+            } else {
+                printf("checkADE_ok AV\n");
+            }
+        }
+        if (!checkADE) {
+            printf("checkADE_false AV\n");
+        } else {
+            vTaskDelay(40 * 1000 / portTICK_PERIOD_MS);
+            printf("Autocalibration stop AV\n");
+            ADE9153_acal_stop();
+            acalStage++;
+        }
+
+        /* Config calib factor */
+        if (acalStage == 2) {
+            /* Read mSure autocalibration */
+            ADE9153_acal_result(&ACALRegs);
+
+            /* Config AIGAIN & AVGAIN */
+            ADE9153_AIGainCFG(RMSRegs.targetAICC, ACALRegs.mSureAICCValue);
+            ADE9153_AVGainCFG(RMSRegs.targetAVCC, ACALRegs.mSureAVCCValue);
+        }
+
+        xSemaphoreGive(ade_calib_semaphore);
+        vTaskSuspend(NULL);
+    }
+
+    /* Delete Calib task */
+    vTaskDelete(NULL);
+}
+
 void ade9153a_mesurement_task(void *parameter)
 {
     float vHeadRoom;
     bool checkSPI = false;
+    
+    // xSemaphoreTake(ade_calib_semaphore, portMAX_DELAY);
 
     /* Init Pin for startup ADE9153 */
     esp_output_create(ADE9153_PIN_RESET);
@@ -221,22 +324,13 @@ void ade9153a_mesurement_task(void *parameter)
     {
         checkSPI = init_spiADE9153(xSPI_HOST, xSPI_CS, xSPI_CLK);
         vTaskDelay(500 / portTICK_PERIOD_MS);
-#if DEV_MODE
+    #if DEV_MODE
         if (!checkSPI)
             printf("SPI config fail\n");
         else
             printf("SPI config success\n");
-#endif
+    #endif
     } while (!checkSPI);
-
-#if TEST_ADE9153
-    while (true)
-    {
-        spi_write32(REG_VNOM, 12);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        ESP_LOGI(TAG, "REG_VNOM: %ld", spi_read32(REG_VNOM));
-    }
-#endif
 
     /* compute targetXCC */
     RMSRegs.targetAICC = calculate_target_aicc(RSHUNT, PGAGAIN);
@@ -253,7 +347,7 @@ void ade9153a_mesurement_task(void *parameter)
         devData.RMSValues = RMSRegs;
         devData.PowValues = PowRegs;
         devData.PQValues = PQRegs;
-#if DEV_MODE
+    #if DEV_MODE
         printf("|- RMSRegs:\n");
         printf("|---- AIReg: %lx and AIValue: %f\n", RMSRegs.AIReg,
                RMSRegs.AIValue);
@@ -275,7 +369,7 @@ void ade9153a_mesurement_task(void *parameter)
                PQRegs.freqValue);
         printf("|---- angleAV_AIReg: %lx and angleAV_AIValue: %f\n",
                PQRegs.angleAV_AIReg, PQRegs.angleAV_AIValue);
-#endif
+    #endif
         vTaskDelay(MESURE_PERIOD / portTICK_PERIOD_MS);
     }
 }

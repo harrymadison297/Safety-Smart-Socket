@@ -96,6 +96,8 @@ typedef struct
 router_and_client_id_infor_t infor = {};
 TaskHandle_t check_connect_wifi_task_handle;
 TaskHandle_t ui_task_handle;
+TaskHandle_t mesure_task_handle;
+TaskHandle_t calib_task_handle;
 
 /**
  * FreeRTOS Task declare
@@ -104,4 +106,5 @@ void check_wifi_task(void *param);
 void request_join_wifi_mesh_task(void *param);
 void send_ui_to_cloud_task(void *parameter);
 void ade9153a_mesurement_task(void *parameter);
+void ade9153a_calib_task(void *parameter);
 #endif
